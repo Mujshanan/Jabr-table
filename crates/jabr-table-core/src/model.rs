@@ -99,7 +99,11 @@ pub struct JabrList {
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DataError {
     #[error("matrix shape {rows}x{columns} does not match {actual} stored values")]
-    MatrixShape { rows: usize, columns: usize, actual: usize },
+    MatrixShape {
+        rows: usize,
+        columns: usize,
+        actual: usize,
+    },
     #[error("matrix row-label count {labels} does not match row count {rows}")]
     MatrixRowLabels { labels: usize, rows: usize },
     #[error("matrix column-label count {labels} does not match column count {columns}")]
@@ -108,8 +112,11 @@ pub enum DataError {
     InvalidId { kind: &'static str, id: String },
     #[error("column index {index} is outside table width {columns}")]
     ColumnIndex { index: usize, columns: usize },
-    #[error("row {row_id} has {actual} cells; expected {expected}") ]
-    RowWidth { row_id: String, actual: usize, expected: usize },
+    RowWidth {
+        row_id: String,
+        actual: usize,
+        expected: usize,
+    },
     #[error("nested list depth exceeds the configured maximum of {max}")]
     ListDepth { max: usize },
 }
