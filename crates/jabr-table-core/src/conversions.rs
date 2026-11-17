@@ -146,7 +146,7 @@ mod tests {
                 CellValue::Integer(10), CellValue::Decimal("2.50".into()),
                 CellValue::Integer(20), CellValue::Decimal("3.75".into()),
             ],
-            row_labels: vec![],
+            row_labels: vec!["Dead".into(), "Live".into()],
             column_labels: vec!["Load".into(), "Factor".into()],
         }
     }
@@ -157,6 +157,7 @@ mod tests {
         assert_eq!(table.columns.len(), 2);
         assert_eq!(table.rows.len(), 2);
         assert_eq!(table.columns[0].title, "Load");
+        assert_eq!(table.rows[0].label.as_deref(), Some("Dead"));
         assert_eq!(table.rows[1].cells[1], CellValue::Decimal("3.75".into()));
     }
 
