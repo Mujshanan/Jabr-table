@@ -76,7 +76,9 @@ pub fn table_to_matrix(
     options: &TableToMatrixOptions,
 ) -> Result<JabrMatrix, DataError> {
     validate_table(table)?;
-    let selected: Vec<usize> = options.columns.clone()
+    let selected: Vec<usize> = options
+        .columns
+        .clone()
         .unwrap_or_else(|| (0..table.columns.len()).collect());
 
     for &index in &selected {
@@ -89,7 +91,11 @@ pub fn table_to_matrix(
         (table.rows.len() + (if options.include_headers { 1 } else { 0 })) * selected.len()
     );
     if options.include_headers {
-        values.extend(selected.iter().map(|&index| CellValue::Text(table.columns[index].title.clone())));
+        values.extend(
+            selected
+                .iter()
+                .map(|&index| CellValue::Text(table.columns[index].title.clone())),
+        );
     }
     for row in &table.rows {
         values.extend(selected.iter().map(|&index| row.cells[index].clone()));
@@ -98,7 +104,11 @@ pub fn table_to_matrix(
     let matrix_rows = table.rows.len() + (if options.include_headers { 1 } else { 0 });
     let column_labels = selected.iter().map(|&index| table.columns[index].title.clone()).collect();
     let row_labels = if table.rows.iter().any(|row| row.label.is_some()) {
-        table.rows.iter().map(|row| row.label.clone().unwrap_or_default()).collect()
+        table
+            .rows
+            .iter()
+            .map(|row| row.label.clone().unwrap_or_default())
+            .collect()
     } else {
         vec![]
     };
@@ -124,7 +134,10 @@ fn infer_column_type(matrix: &JabrMatrix, column: usize) -> ColumnType {
             CellValue::Boolean(_) => ColumnType::Boolean,
             CellValue::Integer(_) => ColumnType::Integer,
             CellValue::Decimal(_) => ColumnType::Decimal,
-            CellValue::Text(_) | CellValue::DateTime(_) | CellValue::Error(_) | CellValue::List(_) => ColumnType::Any,
+            CellValue::Text(_)
+            | CellValue::DateTime(_)
+            | CellValue::Error(_)
+            | CellValue::List(_) => ColumnType::Any,
         };
         if let Some(previous) = found {
             if previous != candidate {
@@ -148,8 +161,10 @@ mod tests {
             rows: 2,
             columns: 2,
             values: vec![
-                CellValue::Integer(10), CellValue::Decimal("2.50".into()),
-                CellValue::Integer(20), CellValue::Decimal("3.75".into()),
+                CellValue::Integer(10),
+                CellValue::Decimal("2.50".into()),
+                CellValue::Integer(20),
+                CellValue::Decimal("3.75".into()),
             ],
             row_labels: vec!["Dead".into(), "Live".into()],
             column_labels: vec!["Load".into(), "Factor".into()],
@@ -179,10 +194,14 @@ mod tests {
     #[test]
     fn table_to_matrix_can_include_header_row() {
         let table = matrix_to_table(&sample_matrix(), MatrixToTableOptions::default()).unwrap();
-        let matrix = table_to_matrix(&table, &TableToMatrixOptions {
-            columns: None,
-            include_headers: true,
-        }).unwrap();
+        let matrix = table_to_matrix(
+            &table,
+            &TableToMatrixOptions {
+                columns: None,
+                include_headers: true,
+            },
+        )
+        .unwrap();
         assert_eq!(matrix.rows, 3);
         assert_eq!(matrix.values[0], CellValue::Text("Load".into()));
     }
