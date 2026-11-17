@@ -97,13 +97,18 @@ pub fn table_to_matrix(
 
     let matrix_rows = table.rows.len() + (if options.include_headers { 1 } else { 0 });
     let column_labels = selected.iter().map(|&index| table.columns[index].title.clone()).collect();
+    let row_labels = if table.rows.iter().any(|row| row.label.is_some()) {
+        table.rows.iter().map(|row| row.label.clone().unwrap_or_default()).collect()
+    } else {
+        vec![]
+    };
     let matrix = JabrMatrix {
         schema_version: 1,
         id: format!("{}:matrix", table.id),
         rows: matrix_rows,
         columns: selected.len(),
         values,
-        row_labels: vec![],
+        row_labels,
         column_labels,
     };
     validate_matrix(&matrix)?;
@@ -168,6 +173,7 @@ mod tests {
         assert_eq!(matrix.rows, 2);
         assert_eq!(matrix.columns, 2);
         assert_eq!(matrix.values, sample_matrix().values);
+        assert_eq!(matrix.row_labels, sample_matrix().row_labels);
     }
 
     #[test]
