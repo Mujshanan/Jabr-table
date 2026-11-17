@@ -104,7 +104,9 @@ pub enum DataError {
     MatrixColumnLabels { labels: usize, columns: usize },
     #[error("duplicate or empty {kind} identifier: {id}")]
     InvalidId { kind: &'static str, id: String },
-    #[error("row {row_id} has {actual} cells; expected {expected}")]
+    #[error("column index {index} is outside table width {columns}")]
+    ColumnIndex { index: usize, columns: usize },
+    #[error("row {row_id} has {actual} cells; expected {expected}") ]
     RowWidth { row_id: String, actual: usize, expected: usize },
     #[error("nested list depth exceeds the configured maximum of {max}")]
     ListDepth { max: usize },
