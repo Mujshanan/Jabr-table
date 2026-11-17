@@ -107,7 +107,7 @@ mod tests {
             schema_version: 1,
             id: "t1".into(),
             columns: vec![Column { id: "c1".into(), title: "A".into(), value_type: ColumnType::Integer, unit_hint: None }],
-            rows: vec![Row { id: "r1".into(), cells: vec![] }],
+            rows: vec![Row { id: "r1".into(), label: None, cells: vec![] }],
         };
         assert!(matches!(validate_table(&table), Err(DataError::RowWidth { .. })));
     }
