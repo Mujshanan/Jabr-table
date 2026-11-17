@@ -3,7 +3,10 @@ use std::collections::HashSet;
 use crate::{CellValue, DataError, JabrMatrix, JabrTable, JabrVector};
 
 pub fn validate_matrix(matrix: &JabrMatrix) -> Result<(), DataError> {
-    let expected = matrix.rows.checked_mul(matrix.columns).unwrap_or(usize::MAX);
+    let expected = matrix
+        .rows
+        .checked_mul(matrix.columns)
+        .unwrap_or(usize::MAX);
     if matrix.values.len() != expected {
         return Err(DataError::MatrixShape {
             rows: matrix.rows,
@@ -34,13 +37,19 @@ pub fn validate_table(table: &JabrTable) -> Result<(), DataError> {
     let mut column_ids = HashSet::new();
     for column in &table.columns {
         if column.id.trim().is_empty() || !column_ids.insert(&column.id) {
-            return Err(DataError::InvalidId { kind: "column", id: column.id.clone() });
+            return Err(DataError::InvalidId {
+                kind: "column",
+                id: column.id.clone(),
+            });
         }
     }
     let mut row_ids = HashSet::new();
     for row in &table.rows {
         if row.id.trim().is_empty() || !row_ids.insert(&row.id) {
-            return Err(DataError::InvalidId { kind: "row", id: row.id.clone() });
+            return Err(DataError::InvalidId {
+                kind: "row",
+                id: row.id.clone(),
+            });
         }
         if row.cells.len() != table.columns.len() {
             return Err(DataError::RowWidth {
@@ -84,7 +93,10 @@ mod tests {
             row_labels: vec![],
             column_labels: vec![],
         };
-        assert!(matches!(validate_matrix(&matrix), Err(DataError::MatrixShape { .. })));
+        assert!(matches!(
+            validate_matrix(&matrix),
+            Err(DataError::MatrixShape { .. })
+        ));
     }
 
     #[test]
@@ -106,9 +118,21 @@ mod tests {
         let table = JabrTable {
             schema_version: 1,
             id: "t1".into(),
-            columns: vec![Column { id: "c1".into(), title: "A".into(), value_type: ColumnType::Integer, unit_hint: None }],
-            rows: vec![Row { id: "r1".into(), label: None, cells: vec![] }],
+            columns: vec![Column {
+                id: "c1".into(),
+                title: "A".into(),
+                value_type: ColumnType::Integer,
+                unit_hint: None,
+            }],
+            rows: vec![Row {
+                id: "r1".into(),
+                label: None,
+                cells: vec![],
+            }],
         };
-        assert!(matches!(validate_table(&table), Err(DataError::RowWidth { .. })));
+        assert!(matches!(
+            validate_table(&table),
+            Err(DataError::RowWidth { .. })
+        ));
     }
 }
