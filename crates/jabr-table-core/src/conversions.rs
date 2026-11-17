@@ -54,6 +54,7 @@ pub fn matrix_to_table(
     let rows = (0..matrix.rows)
         .map(|row_index| Row {
             id: format!("{}:row:{}", matrix.id, row_index),
+            label: if matrix.row_labels.is_empty() { None } else { Some(matrix.row_labels[row_index].clone()) },
             cells: (0..matrix.columns)
                 .map(|column_index| matrix.values[row_index * matrix.columns + column_index].clone())
                 .collect(),
@@ -85,7 +86,7 @@ pub fn table_to_matrix(
     }
 
     let mut values = Vec::with_capacity(
-        (table.rows.len() + usize::from(options.include_headers)) * selected.len()
+        (table.rows.len() + (if options.include_headers { 1 } else { 0 })) * selected.len()
     );
     if options.include_headers {
         values.extend(selected.iter().map(|&index| CellValue::Text(table.columns[index].title.clone())));
@@ -94,7 +95,7 @@ pub fn table_to_matrix(
         values.extend(selected.iter().map(|&index| row.cells[index].clone()));
     }
 
-    let matrix_rows = table.rows.len() + usize::from(options.include_headers);
+    let matrix_rows = table.rows.len() + (if options.include_headers { 1 } else { 0 });
     let column_labels = selected.iter().map(|&index| table.columns[index].title.clone()).collect();
     let matrix = JabrMatrix {
         schema_version: 1,
