@@ -44,6 +44,8 @@ pub struct Column {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Row {
     pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
     /// Values are aligned to the table's ordered column list.
     pub cells: Vec<CellValue>,
 }
