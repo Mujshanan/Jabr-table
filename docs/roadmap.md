@@ -1,64 +1,68 @@
 # Jabr-table implementation roadmap
 
-## Phase 0 — Repository and contract bootstrap
-- [x] Define ownership boundaries across Jabr-table, Jabr-UI, and Jabr-CLI.
-- [x] Define canonical table, list, vector, matrix, and scalar value semantics.
-- [x] Define conversion rules and loss/diagnostic policy.
-- [x] Define spreadsheet function families and limit compatibility claims.
-- [x] Define Rust workspace split and TypeScript integration contract.
-- [ ] Validate the Rust adapter against the current Jabr-CLI repository layout and runtime.
+The order is deliberately Rust-first. Do not begin substantial BlockSuite UI work until the data model and Calcpad bridge have a tested vertical slice.
 
-## Phase 1 — Rust core data model
-- [ ] Create Cargo workspace and `jabr-table-core`.
-- [ ] Implement tagged scalar values and stable error types.
-- [ ] Implement Table, Vector, Matrix, and List models with validation.
-- [ ] Implement JSON/Serde versioned DTOs.
-- [ ] Add shape, ordering, identity, and decimal-preservation tests.
+## Phase 0 — Repository and ownership
+- [x] Define Jabr-table, Jabr-cli, Jabr-UI and CivilKit responsibilities.
+- [x] Define typed scalar, Table, Vector, Matrix and List models.
+- [x] Define explicit conversion and diagnostic rules.
+- [x] Identify AFFiNE/BlockSuite table implementation as the grid reference.
+- [x] Separate custom block implementation into Jabr-UI.
 
-## Phase 2 — Conversions and range primitives
-- [ ] Implement table ↔ matrix conversions with explicit policies.
-- [ ] Implement table ↔ vector conversions.
-- [ ] Implement table ↔ list conversions.
-- [ ] Implement matrix transpose and basic shape operations.
-- [ ] Add round-trip and data-loss diagnostic tests.
+## Phase 1 — Rust core correctness
+- [x] Create Cargo workspace and jabr-table-core.
+- [x] Add tagged scalar values and stable error structures.
+- [x] Add Table, Vector, Matrix and List models.
+- [x] Add structural validation for matrix shape and table rows.
+- [x] Add initial Matrix ↔ Table conversions.
+- [ ] Add full serde round-trip tests and schema-version guards.
+- [ ] Cover zero-sized shapes, empty labels, mixed values, selected columns, duplicate IDs and conversion identity.
+- [ ] Make fmt, Clippy and test CI green.
 
-## Phase 3 — Spreadsheet-compatible operations
-- [ ] Implement typed range abstraction.
-- [ ] Implement aggregation and logical functions.
+## Phase 2 — Calcpad / Jabr-cli bridge (highest priority)
+- [ ] Inspect the current Jabr-cli Calcpad engine runtime and Rust build boundary.
+- [ ] Decide direct Rust dependency or versioned worker/RPC transport from the actual runtime; do not guess or introduce FFI/WASM prematurely.
+- [ ] Define versioned request/response DTOs, capabilities and stable error mapping.
+- [ ] Bridge Table, Matrix, Vector and List values without losing exact decimal data or unit metadata.
+- [ ] Dispatch matrix/table conversion operations through the Calcpad worksheet engine.
+- [ ] Add direct-Rust versus worksheet-dispatch parity tests.
+- [ ] Confirm CivilKit can consume the stable Rust API without UI dependencies.
+
+## Phase 3 — Engineering data operations and spreadsheet functions
+- [ ] Add typed range abstraction and indexing/slicing.
+- [ ] Implement aggregation and numeric/logical functions.
 - [ ] Implement conditional aggregation and lookup functions.
-- [ ] Implement text and numeric functions.
-- [ ] Implement matrix functions (MMULT, MINVERSE, MDETERM).
-- [ ] Define compatibility matrix and error semantics.
-- [ ] Add deterministic golden tests.
+- [ ] Implement matrix transpose, multiplication, determinant and inverse with documented numerical behavior.
+- [ ] Publish a function compatibility table and error semantics.
+- [ ] Preserve quantity/unit metadata through the Calcpad engine contract.
 
 ## Phase 4 — Data I/O
-- [ ] Implement CSV import/export with explicit options and diagnostics.
-- [ ] Implement XLSX workbook/sheet/cell import.
-- [ ] Implement safe XLSX export and formula-source preservation policy.
-- [ ] Add malformed, oversized, and adversarial input tests.
-- [ ] Validate round trips and document unsupported workbook features.
+- [ ] CSV staging import/export with explicit parsing policies.
+- [ ] XLSX workbook/sheet/cell import and safe export.
+- [ ] Preserve formula source where supported without duplicating formula evaluation.
+- [ ] Add round-trip, malformed and oversized-input tests.
 
-## Phase 5 — Jabr-UI BlockSuite integration
-- [ ] Add shared TypeScript contracts to Jabr-UI through a stable package/API boundary.
-- [ ] Implement `jabr:table` block and grid interaction.
-- [ ] Implement `jabr:vector`, `jabr:matrix`, and `jabr:list` blocks.
-- [ ] Add matrix ↔ table and table ↔ vector/list conversion commands.
-- [ ] Implement paste/import/export flows and keyboard ownership.
-- [ ] Test undo/redo, Yjs persistence, collaboration-safe authored operations, and browser interactions.
+## Phase 5 — Minimal BlockSuite custom blocks (Jabr-UI only)
+- [ ] Publish stable TypeScript contracts and fixtures from Jabr-table.
+- [ ] Adapt the BlockSuite affine:table row/column/cell data pattern into a Jabr-owned table block.
+- [ ] Reuse the same minimal grid interaction for matrix and one-axis vector blocks.
+- [ ] Add a custom typed list block only where native list/paragraph blocks cannot represent the data.
+- [ ] Implement paste, conversion and import/export commands.
+- [ ] Verify Yjs persistence, undo/redo and collaboration-safe authored operations.
+- [ ] Keep toolbar and visual styling minimal; no spreadsheet application shell.
 
-## Phase 6 — Jabr-CLI Rust engine integration
-- [ ] Add a thin CLI adapter dispatching AST function calls to Jabr-table Rust operations.
-- [ ] Preserve CLI ownership of parsing, names, scopes, dependency graph, units, and recalculation.
-- [ ] Add table/vector/matrix/list values to the CLI evaluation bridge.
-- [ ] Add integration tests proving CLI and direct Rust calls produce identical results.
-- [ ] Verify no duplicate function implementations are introduced.
+## First complete vertical slice
 
-## First vertical slice
+1. Rust Table and Matrix models with stable serialization.
+2. Matrix ↔ Table conversion with explicit header/label policy.
+3. Calcpad/Jabr-cli bridge dispatching those operations.
+4. Direct Rust and worksheet result parity tests.
+5. A small Jabr-UI block prototype calling the bridge and undoing the conversion as one authored operation.
 
-1. Rust core models for Table and Matrix.
-2. Matrix ↔ Table conversion with explicit header/blank/type policies.
-3. JSON round-trip and shape validation.
-4. Minimal TypeScript contract.
-5. Jabr-UI matrix/table block prototype converting a small authored matrix into a table and undoing the conversion.
+## Deferred
 
-Do not begin with a full Excel clone or a large spreadsheet grid. Prove the data model, conversion semantics, persistence boundary, and Rust/UI contract first.
+- Full Excel formula compatibility and VBA/macros.
+- Pivot tables, charts, workbook tabs and formula bar.
+- Elaborate cell styling, merged cells and advanced selection overlays.
+- Dedicated WASM/C ABI unless the runtime analysis demonstrates that it is required.
+- Broad custom block UI before the engine bridge is stable.
