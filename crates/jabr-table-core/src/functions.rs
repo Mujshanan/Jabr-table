@@ -24,7 +24,10 @@ pub enum FunctionError {
 
 /// Exact-match MATCH. Returns a 1-based position, matching spreadsheet conventions.
 /// If duplicate values exist, the first matching position is returned.
-pub fn match_index(lookup_value: &CellValue, lookup_range: &[CellValue]) -> Result<usize, FunctionError> {
+pub fn match_index(
+    lookup_value: &CellValue,
+    lookup_range: &[CellValue],
+) -> Result<usize, FunctionError> {
     if lookup_range.is_empty() {
         return Err(FunctionError::EmptyRange);
     }
@@ -133,7 +136,10 @@ mod tests {
 
     #[test]
     fn match_reports_missing_and_empty_ranges() {
-        assert_eq!(match_index(&text("X"), &[text("A")]), Err(FunctionError::NotFound));
+        assert_eq!(
+            match_index(&text("X"), &[text("A")]),
+            Err(FunctionError::NotFound)
+        );
         assert_eq!(match_index(&text("X"), &[]), Err(FunctionError::EmptyRange));
     }
 
@@ -150,10 +156,19 @@ mod tests {
     #[test]
     fn vlookup_checks_column_index_and_rectangular_shape() {
         let table = vec![vec![text("A"), number(10.0)]];
-        assert_eq!(vlookup(&text("A"), &table, 0), Err(FunctionError::InvalidColumnIndex));
-        assert_eq!(vlookup(&text("A"), &table, 3), Err(FunctionError::InvalidColumnIndex));
+        assert_eq!(
+            vlookup(&text("A"), &table, 0),
+            Err(FunctionError::InvalidColumnIndex)
+        );
+        assert_eq!(
+            vlookup(&text("A"), &table, 3),
+            Err(FunctionError::InvalidColumnIndex)
+        );
         let ragged = vec![vec![text("A")], vec![text("B"), number(2.0)]];
-        assert_eq!(vlookup(&text("A"), &ragged, 1), Err(FunctionError::RaggedTable));
+        assert_eq!(
+            vlookup(&text("A"), &ragged, 1),
+            Err(FunctionError::RaggedTable)
+        );
     }
 
     #[test]
@@ -168,13 +183,25 @@ mod tests {
     #[test]
     fn hlookup_checks_row_index() {
         let table = vec![vec![text("A"), text("B")]];
-        assert_eq!(hlookup(&text("A"), &table, 0), Err(FunctionError::InvalidRowIndex));
-        assert_eq!(hlookup(&text("A"), &table, 2), Err(FunctionError::InvalidRowIndex));
+        assert_eq!(
+            hlookup(&text("A"), &table, 0),
+            Err(FunctionError::InvalidRowIndex)
+        );
+        assert_eq!(
+            hlookup(&text("A"), &table, 2),
+            Err(FunctionError::InvalidRowIndex)
+        );
     }
 
     #[test]
     fn max_and_min_ignore_non_numeric_values() {
-        let values = vec![CellValue::Empty, text("ignored"), CellValue::Boolean(true), number(-4.0), number(8.5)];
+        let values = vec![
+            CellValue::Empty,
+            text("ignored"),
+            CellValue::Boolean(true),
+            number(-4.0),
+            number(8.5),
+        ];
         assert_eq!(max(&values), Some(8.5));
         assert_eq!(min(&values), Some(-4.0));
     }
