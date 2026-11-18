@@ -73,13 +73,15 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 
 ### Stage 2 — Data interchange MVP
 
-- [ ] CSV import/export.
-- [ ] TSV import/export.
-- [ ] JSON import/export.
-- [ ] XML import/export with mapping and preview data structures.
-- [ ] Round-trip, malformed-input, type inference, and size-limit tests.
+- [x] CSV import/export with quoted fields, configurable headers, and type inference.
+- [x] TSV import/export through the same delimiter-aware adapter.
+- [x] JSON import/export preserving the native table structure and stable IDs.
+- [x] XML import/export with configurable record elements, field-to-column mapping, namespace-local field names, and safe parser defaults.
+- [x] Round-trip and malformed-input tests for supported formats.
+- [ ] Add configurable import limits and explicit schema/column mapping for CSV/JSON/XML.
+- [ ] Add larger-file streaming benchmarks and resource-limit tests.
 
-**Exit criteria:** data can be exchanged without coupling to UI or document storage.
+**Current implementation:** `interchange` exposes delimited-text, JSON, and XML adapters. CSV/TSV use a standards-aware parser/writer; delimited imports infer homogeneous number/boolean/text columns and use `Any` for mixed or empty columns. JSON preserves the serde table representation. XML accepts a configurable repeated record element and field-to-column mapping, and recognizes namespace-local names. XML parsing does not enable external entity resolution. The canonical XML exporter includes table and column metadata.\n\n**Remaining hardening:** explicit input-size/row/column limits, richer XML metadata round-tripping, and streaming performance tests.\n\n**Exit criteria:** data can be exchanged without coupling to UI or document storage.
 
 ### Stage 3 — Matrix PoC
 
