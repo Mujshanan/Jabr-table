@@ -1,6 +1,7 @@
 //! Minimal, UI-independent table data model for Jabr.
 
 pub mod functions;
+pub mod interchange;
 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
