@@ -81,16 +81,21 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 - [ ] Add configurable import limits and explicit schema/column mapping for CSV/JSON/XML.
 - [ ] Add larger-file streaming benchmarks and resource-limit tests.
 
-**Current implementation:** `interchange` exposes delimited-text, JSON, and XML adapters. CSV/TSV use a standards-aware parser/writer; delimited imports infer homogeneous number/boolean/text columns and use `Any` for mixed or empty columns. JSON preserves the serde table representation. XML accepts a configurable repeated record element and field-to-column mapping, and recognizes namespace-local names. XML parsing does not enable external entity resolution. The canonical XML exporter includes table and column metadata.\n\n**Remaining hardening:** explicit input-size/row/column limits, richer XML metadata round-tripping, and streaming performance tests.\n\n**Exit criteria:** data can be exchanged without coupling to UI or document storage.
+**Current implementation:** `interchange` exposes delimited-text, JSON, and XML adapters. CSV/TSV use a standards-aware parser/writer; delimited imports infer homogeneous number/boolean/text columns and use `Any` for mixed or empty columns. JSON preserves the serde table representation. XML accepts a configurable repeated record element and field-to-column mapping, and recognizes namespace-local names. XML parsing does not enable external entity resolution. The canonical XML exporter includes table and column metadata.
+
+**Remaining hardening:** explicit input-size/row/column limits, richer XML metadata round-tripping, and streaming performance tests.
+
+**Exit criteria:** data can be exchanged without coupling to UI or document storage.
 
 ### Stage 3 — Matrix PoC
 
-- [ ] Dense matrix/vector value representation or adapter contract.
-- [ ] Addition, subtraction, multiplication, transpose, and matrix-vector multiplication.
-- [ ] Dimension and numerical error handling.
-- [ ] Benchmark `faer` and `nalgebra` against small FEM element-matrix fixtures.
+- [x] Dense row-major matrix representation with validated dimensions and finite values.
+- [x] Addition, subtraction, multiplication, transpose, and matrix-vector multiplication.
+- [x] Dimension and numerical error handling.
+- [ ] Benchmark faer and nalgebra against small FEM element-matrix fixtures.
+- [ ] Decide whether to retain the small dense implementation or delegate operations to a numerical backend.
 
-**Exit criteria:** correct small dense matrix operations with verified test fixtures. Sparse global FEM solving remains out of scope for this stage.
+**Current implementation:** matrix::DenseMatrix is a dependency-light, row-major dense matrix for small element-level calculations. It provides addition, subtraction, multiplication, transpose, and matrix-vector multiplication, with shape and finite-number validation. Unit tests cover arithmetic, dimensions, and numerical input validation. Backend benchmarking and independent structural-element fixtures remain outstanding. Sparse global FEM solving remains out of scope for this stage.
 
 ### Stage 4 — Integration contract
 
