@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns:a="urn:jabr:section" xmlns:b="urn:jabr:material">
+  <a:item>
+    <a:name>Beam A</a:name>
+    <b:name>Concrete</b:name>
+  </a:item>
+</root>
