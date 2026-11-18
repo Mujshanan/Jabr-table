@@ -64,7 +64,6 @@ pub fn matrix_to_table(
             } else {
                 Some(matrix.row_labels[row_index].clone())
             },
-            
             cells: (0..matrix.columns)
                 .map(|column_index| {
                     matrix.values[row_index * matrix.columns + column_index].clone()
