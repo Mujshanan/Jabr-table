@@ -3,13 +3,14 @@ use std::collections::HashSet;
 use crate::{CellValue, DataError, JabrMatrix, JabrTable, JabrVector};
 
 pub fn validate_matrix(matrix: &JabrMatrix) -> Result<(), DataError> {
-    let expected = matrix
-        .rows
-        .checked_mul(matrix.columns)
-        .ok_or(DataError::MatrixSizeOverflow {
-            rows: matrix.rows,
-            columns: matrix.columns,
-        })?;
+    let expected =
+        matrix
+            .rows
+            .checked_mul(matrix.columns)
+            .ok_or(DataError::MatrixSizeOverflow {
+                rows: matrix.rows,
+                columns: matrix.columns,
+            })?;
     if matrix.values.len() != expected {
         return Err(DataError::MatrixShape {
             rows: matrix.rows,
