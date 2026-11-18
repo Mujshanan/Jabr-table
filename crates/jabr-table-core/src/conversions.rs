@@ -17,21 +17,12 @@ impl Default for MatrixToTableOptions {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct TableToMatrixOptions {
     /// Optional ordered subset of table column indices. None selects every column.
     pub columns: Option<Vec<usize>>,
     /// When true, a text header row is prepended to matrix values.
     pub include_headers: bool,
-}
-
-impl Default for TableToMatrixOptions {
-    fn default() -> Self {
-        Self {
-            columns: None,
-            include_headers: false,
-        }
-    }
 }
 
 pub fn matrix_to_table(
