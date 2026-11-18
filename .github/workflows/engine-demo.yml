@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - ui/minimal-engine-demo
+  pull_request:
+    branches:
+      - main
 
 jobs:
   validate-demo:
