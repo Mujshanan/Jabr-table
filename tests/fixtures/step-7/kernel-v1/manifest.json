@@ -1,0 +1,15 @@
+{
+  "fixture_set": "jabr-table-step-7-kernel-envelope-v1",
+  "contract": {
+    "repository": "Mujshanan/Jabr-kernel",
+    "revision": "7146f3151dd742ccded92c2e580f9b662d814b59",
+    "schema_version": 1
+  },
+  "ownership": "Table-owned consumer conformance fixtures; Kernel remains the authority for generic type definitions and serialization behavior.",
+  "cases": [
+    "envelope-success.json",
+    "envelope-failure-with-span.json",
+    "envelope-warning-with-result.json"
+  ],
+  "note": "These fixtures are normative examples for the Table-to-Engine adapter contract. They do not imply that a Table-to-Kernel dependency exists."
+}

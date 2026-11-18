@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table format="jabr-table" version="1" id="members">
+  <columns>
+    <column id="name" name="Name" type="text"/>
+    <column id="area" name="Area" type="number"/>
+    <column id="active" name="Active" type="boolean"/>
+  </columns>
+  <rows>
+    <row id="r1">
+      <cell column_id="name" type="text">Beam, B</cell>
+      <cell column_id="area" type="number">12.5</cell>
+      <cell column_id="active" type="boolean">true</cell>
+    </row>
+  </rows>
+</table>

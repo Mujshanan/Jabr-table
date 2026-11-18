@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "result": null,
+  "diagnostics": [
+    {
+      "code": "table.import.csv.invalid_record",
+      "severity": "error",
+      "message": "CSV record has an invalid field count",
+      "span": {
+        "start": 12,
+        "end": 18
+      }
+    }
+  ]
+}
