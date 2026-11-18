@@ -92,10 +92,15 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 - [x] Dense row-major matrix representation with validated dimensions and finite values.
 - [x] Addition, subtraction, multiplication, transpose, and matrix-vector multiplication.
 - [x] Dimension and numerical error handling.
-- [ ] Benchmark faer and nalgebra against small FEM element-matrix fixtures.
+- [x] Deterministic matrix identity checks across rectangular shapes.
+- [x] Closed-form 2D truss local stiffness fixture.
+- [x] Closed-form 2D Euler-Bernoulli beam local stiffness fixture.
+- [x] 2D truss coordinate transformation and global stiffness fixture.
+- [x] Arithmetic overflow rejection tests.
+- [ ] Benchmark faer and nalgebra against representative element-matrix fixtures.
 - [ ] Decide whether to retain the small dense implementation or delegate operations to a numerical backend.
 
-**Current implementation:** matrix::DenseMatrix is a dependency-light, row-major dense matrix for small element-level calculations. It provides addition, subtraction, multiplication, transpose, and matrix-vector multiplication, with shape and finite-number validation. Unit tests cover arithmetic, dimensions, and numerical input validation. Backend benchmarking and independent structural-element fixtures remain outstanding. Sparse global FEM solving remains out of scope for this stage.
+**Current implementation:** matrix::DenseMatrix is a dependency-light, row-major dense matrix for small element-level calculations. Its integration fixtures verify the 2D truss axial stiffness matrix, the 2D Euler-Bernoulli beam local stiffness matrix, and the transformed global stiffness matrix for a 30-degree truss. Deterministic identity checks cover rectangular shapes, and overflow tests ensure arithmetic does not return non-finite matrix/vector results. Fixture values are derived from the closed-form element stiffness equations and checked independently of the implementation's matrix multiplication path. Backend benchmarking remains outstanding. Sparse global FEM solving remains out of scope for this stage.
 
 ### Stage 4 — Integration contract
 
