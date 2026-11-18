@@ -1,5 +1,9 @@
 # Jabr-table — Development Guide
 
+> **Architecture baseline (2026-11-18):** Table owns table structure, stable table/row/column/cell identity, authored cell text and table metadata. It does not parse cell expressions, evaluate formulas, or store Math evaluation values. Jabr Math parses and evaluates cell text. Jabr-engine (planned; repository not yet created) chooses graph nodes (including table columns where appropriate), builds dependencies, orchestrates calculation, and owns ResultStore<MathValue>. Kernel provides only generic infrastructure; Table must not access Kernel result storage. Jabr-UI owns the custom blocks and authored BlockSuite/Yjs document.
+
+> **Existing-model audit:** the current jabr-table-core uses CellValue::{Empty, Text, Number, Boolean}. This is a real existing implementation that must be reconciled with the authored-text contract. Keep typed import/export and pure table-operation representations separate from the canonical authored worksheet source. Do not remove working interchange or matrix operations as part of a documentation-only change, and do not convert Math values into Table-owned values.
+
 ## 1. Product direction
 
 Build the **Rust data/calculation layer first**. Jabr-table is not the place to build a spreadsheet application or a rich BlockSuite editor. Its job is to provide reliable, deterministic data structures and operations for the Calcpad-based engineering worksheet engine, with a narrow bridge to Jabr-cli and downstream engineering consumers such as CivilKit.
