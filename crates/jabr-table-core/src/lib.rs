@@ -227,10 +227,7 @@ mod tests {
             table.cell("r1", "mark").unwrap(),
             &CellValue::Text("UB 305".into())
         );
-        assert_eq!(
-            table.cell("r1", "area").unwrap(),
-            &CellValue::Number(51.3)
-        );
+        assert_eq!(table.cell("r1", "area").unwrap(), &CellValue::Number(51.3));
     }
 
     #[test]
