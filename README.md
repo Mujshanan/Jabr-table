@@ -17,11 +17,11 @@
 | Repository / layer | Responsibility |
 |---|---|
 | **Jabr-table (this repository)** | Rust data model, validation, conversions, range and matrix operations, spreadsheet-compatible functions, CSV/XLSX I/O, versioned bridge contract |
-| **Jabr-cli** | Calcpad/Rust worksheet engine integration, expression/AST dispatch, variables, scopes, dependency tracking, units, calculation orchestration |
+| **Jabr Math** | Mathematical syntax, parsing, AST, values, quantities, units, dimensional rules and expression evaluation |
 | **Jabr-UI** | Separate BlockSuite custom-block implementation, editing interactions, menus, selection, rendering, Yjs persistence |
 | **CivilKit / engineering consumers** | Consume the stable calculation/data bridge; no UI or BlockSuite dependency |
 
-Jabr-table must remain usable as a standalone Rust library. Jabr-UI must not implement calculations or file-format semantics. Jabr-cli must not fork data operations already implemented here. Keep the bridge narrow and versioned.
+Jabr-table must remain usable as a standalone Rust library. Jabr-UI must not implement calculations or file-format semantics. Jabr Math must not fork table/data operations already implemented here; Jabr-engine coordinates calls across the repositories. Keep the bridge narrow and versioned.
 
 ## Rust-first scope
 
@@ -30,7 +30,7 @@ Jabr-table must remain usable as a standalone Rust library. Jabr-UI must not imp
 3. Loss-aware conversions between those structures.
 4. Range operations and spreadsheet-compatible functions needed by engineering worksheets.
 5. CSV and XLSX import/export with explicit safety and compatibility policies.
-6. A versioned Rust-facing API and serialized bridge for Jabr-cli and downstream engineering consumers.
+6. A versioned Rust-facing API and serialized bridge for Jabr-engine and downstream engineering consumers.
 
 This is **not** a promise of full Microsoft Excel compatibility. Implement and test individual functions, documenting supported argument forms and differences.
 
