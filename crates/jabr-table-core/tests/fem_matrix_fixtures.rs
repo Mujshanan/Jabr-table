@@ -13,7 +13,10 @@ fn assert_close(actual: f64, expected: f64) {
 }
 
 fn assert_matrix_close(actual: &DenseMatrix, expected: &DenseMatrix) {
-    assert_eq!((actual.rows(), actual.columns()), (expected.rows(), expected.columns()));
+    assert_eq!(
+        (actual.rows(), actual.columns()),
+        (expected.rows(), expected.columns())
+    );
     for (index, (actual, expected)) in actual.as_slice().iter().zip(expected.as_slice()).enumerate() {
         assert_close(*actual, *expected);
         assert!(actual.is_finite(), "entry {index} is not finite");
@@ -24,12 +27,8 @@ fn assert_matrix_close(actual: &DenseMatrix, expected: &DenseMatrix) {
 fn two_dimensional_truss_local_stiffness_fixture() {
     // Axial bar: E=200, A=0.01, L=2 => EA/L = 1.
     // DOF order: [u1, v1, u2, v2].
-    let local = matrix(vec![
-        vec![1.0, 0.0, -1.0, 0.0],
-        vec![0.0, 0.0, 0.0, 0.0],
-        vec![-1.0, 0.0, 1.0, 0.0],
-        vec![0.0, 0.0, 0.0, 0.0],
-    ]);
+    let axial_operator = matrix(vec![vec![-1.0, 0.0, 1.0, 0.0]]);
+    let local = axial_operator.transpose().multiply(&axial_operator).unwrap();
     let expected = matrix(vec![
         vec![1.0, 0.0, -1.0, 0.0],
         vec![0.0, 0.0, 0.0, 0.0],
@@ -37,7 +36,12 @@ fn two_dimensional_truss_local_stiffness_fixture() {
         vec![0.0, 0.0, 0.0, 0.0],
     ]);
     assert_matrix_close(&local, &expected);
-    assert_eq!(local.multiply_vector(&[1.0, 0.0, -1.0, 0.0]).unwrap(), vec![2.0, 0.0, -2.0, 0.0]);
+    assert_eq!(
+        local
+            .multiply_vector(&[1.0, 0.0, -1.0, 0.0])
+            .unwrap(),
+        vec![2.0, 0.0, -2.0, 0.0]
+    );
 }
 
 #[test]
@@ -84,7 +88,12 @@ fn rotated_truss_stiffness_matches_closed_form_global_matrix() {
         vec![-1.5, -3.0_f64.sqrt() / 2.0, 1.5, 3.0_f64.sqrt() / 2.0],
         vec![-3.0_f64.sqrt() / 2.0, -0.5, 3.0_f64.sqrt() / 2.0, 0.5],
     ]);
-    let global = transform.transpose().multiply(&local).unwrap().multiply(&transform).unwrap();
+    let global = transform
+        .transpose()
+        .multiply(&local)
+        .unwrap()
+        .multiply(&transform)
+        .unwrap();
     assert_matrix_close(&global, &expected);
     assert_matrix_close(&global, &global.transpose());
 }
