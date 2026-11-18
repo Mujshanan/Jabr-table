@@ -12,3 +12,11 @@ thiserror.workspace = true
 csv.workspace = true
 serde_json.workspace = true
 roxmltree.workspace = true
+
+[dev-dependencies]
+faer = { version = "0.24.4", default-features = false, features = ["std"] }
+nalgebra = "0.33.3"
+
+[[bench]]
+name = "matrix_backend_compare"
+harness = false
