@@ -99,22 +99,45 @@ pub fn import_xml(input: &str, options: &XmlImportOptions) -> Result<Table, Inte
             if !names.contains(&name) { names.push(name); }
         }
     }
+    // Canonical exports carry enough column metadata to restore IDs, names,
+    // and declared types. Generic XML falls back to inference and mapping.
+    let metadata: BTreeMap<String, (String, String, ColumnType)> = document.descendants()
+        .filter(|n| n.is_element() && n.tag_name().name() == "column")
+        .filter_map(|n| {
+            let id = n.attribute("id")?.to_owned();
+            let name = n.attribute("name").unwrap_or(&id).to_owned();
+            let kind = match n.attribute("type").unwrap_or("any") {
+                "text" => ColumnType::Text, "number" => ColumnType::Number,
+                "boolean" => ColumnType::Boolean, _ => ColumnType::Any,
+            };
+            Some((xml_tag(&id), (id, name, kind)))
+        }).collect();
     let field_values: Vec<Vec<String>> = names.iter().map(|name| records.iter().flat_map(|record|
         record.children().filter(|n| n.is_element() && n.tag_name().name() == name)
             .map(|n| n.text().unwrap_or("").trim().to_owned())).collect()).collect();
-    let columns = names.iter().enumerate().map(|(i, name)| {
-        let id = options.field_to_column.get(name).cloned().unwrap_or_else(|| name.strip_prefix("c_").unwrap_or(name).to_owned());
-        let kind = infer_type(field_values[i].iter().map(String::as_str));
-        Column { id, name: name.clone(), value_type: kind }
+    let columns = names.iter().enumerate().map(|(i, field_name)| {
+        if let Some((id, name, kind)) = metadata.get(field_name) {
+            let mapped_id = options.field_to_column.get(field_name).cloned().unwrap_or_else(|| id.clone());
+            Column { id: mapped_id, name: name.clone(), value_type: *kind }
+        } else {
+            let id = options.field_to_column.get(field_name).cloned()
+                .unwrap_or_else(|| field_name.strip_prefix("c_").unwrap_or(field_name).to_owned());
+            let kind = infer_type(field_values[i].iter().map(String::as_str));
+            Column { id, name: field_name.clone(), value_type: kind }
+        }
     }).collect();
     let mut table = Table::new(options.table_id.clone(), columns)?;
     for (index, record) in records.iter().enumerate() {
-        let row_id = format!("row_{}", index + 1);
+        let row_id = record.attribute("id").filter(|id| !id.trim().is_empty())
+            .map(str::to_owned).unwrap_or_else(|| format!("row_{}", index + 1));
         table.add_row(row_id.clone())?;
         for field in record.children().filter(|n| n.is_element()) {
-            let name = field.tag_name().name();
-            let id = options.field_to_column.get(name).cloned().unwrap_or_else(|| name.strip_prefix("c_").unwrap_or(name).to_owned());
-            table.set_cell(&row_id, &id, parse_cell(field.text().unwrap_or("").trim()))?;
+            let field_name = field.tag_name().name();
+            let id = options.field_to_column.get(field_name).cloned()
+                .or_else(|| metadata.get(field_name).map(|entry| entry.0.clone()))
+                .unwrap_or_else(|| field_name.strip_prefix("c_").unwrap_or(field_name).to_owned());
+            let target_id = options.field_to_column.get(field_name).cloned().unwrap_or(id);
+            table.set_cell(&row_id, &target_id, parse_cell(field.text().unwrap_or("").trim()))?;
         }
     }
     Ok(table)
@@ -181,7 +204,9 @@ fn validate_table(table: &Table) -> Result<(), InterchangeError> {
             let col = table.columns.iter().find(|c| c.id == *id)
                 .ok_or_else(|| TableError::UnknownColumn(id.clone()))?;
             let valid = match (col.value_type, value) {
-                (_, CellValue::Empty) | (ColumnType::Any, _) => true,
+                (_, CellValue::Empty) => true,
+                (ColumnType::Any, CellValue::Number(n)) => n.is_finite(),
+                (ColumnType::Any, _) => true,
                 (ColumnType::Text, CellValue::Text(_)) => true,
                 (ColumnType::Number, CellValue::Number(n)) => n.is_finite(),
                 (ColumnType::Boolean, CellValue::Boolean(_)) => true,
@@ -245,6 +270,12 @@ mod tests {
         let t = import_xml(xml,&opts).unwrap();
         assert_eq!(t.cell("row_1","member_name").unwrap(), &CellValue::Text("Beam A".into()));
         assert_eq!(t.cell("row_1","area").unwrap(), &CellValue::Number(18.2));
+    }
+    #[test] fn xml_export_import_round_trip_preserves_column_and_row_metadata() {
+        let original = sample();
+        let xml = export_xml(&original).unwrap();
+        let imported = import_xml(&xml, &XmlImportOptions::new("members", "row")).unwrap();
+        assert_eq!(imported, original);
     }
     #[test] fn xml_export_escapes_text() {
         let xml = export_xml(&sample()).unwrap();
