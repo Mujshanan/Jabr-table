@@ -1,0 +1,14 @@
+[package]
+name = "jabr-table-core"
+version = "0.1.0"
+description = "Typed table data model and operations for the Jabr engineering ecosystem"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+csv.workspace = true
+serde_json.workspace = true
+roxmltree.workspace = true
