@@ -236,7 +236,6 @@ fn xml_tag(id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Column, ColumnType};
     fn sample() -> Table {
         let mut t = Table::new("members", vec![
             Column { id:"name".into(), name:"Name".into(), value_type:ColumnType::Text },
