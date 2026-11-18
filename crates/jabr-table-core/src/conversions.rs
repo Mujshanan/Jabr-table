@@ -218,5 +218,6 @@ mod tests {
         .unwrap();
         assert_eq!(matrix.rows, 3);
         assert_eq!(matrix.values[0], CellValue::Text("Load".into()));
+        assert_eq!(matrix.row_labels, vec!["Header", "Dead", "Live"]);
     }
 }
