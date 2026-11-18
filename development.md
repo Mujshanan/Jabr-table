@@ -6,7 +6,7 @@
 
 ## 1. Product direction
 
-Build the **Rust data/calculation layer first**. Jabr-table is not the place to build a spreadsheet application or a rich BlockSuite editor. Its job is to provide reliable, deterministic data structures and operations for the Calcpad-based engineering worksheet engine, with a narrow bridge to Jabr-cli and downstream engineering consumers such as CivilKit.
+Build the **Rust table/data-operation layer first**. Jabr-table is not the place to build a spreadsheet application or a rich BlockSuite editor. Its job is to provide reliable, deterministic table structures and pure data operations for Jabr-engine and downstream engineering consumers such as CivilKit.
 
 The visual editor is a separate project: [Mujshanan/Jabr-UI](https://github.com/Mujshanan/Jabr-UI). Keep this repository free of BlockSuite, Lit, DOM, Yjs, MathLive, and editor dependencies.
 
@@ -39,7 +39,7 @@ Planned crate split:
 - jabr-table-core: canonical models, validation, conversions, range primitives, deterministic operations.
 - jabr-table-functions: spreadsheet-compatible and matrix functions, depending on core.
 - jabr-table-io: CSV/XLSX parsing and export; owns file bytes and format-specific dependencies.
-- jabr-table-bridge: stable DTO/ABI adapter only if required by Jabr-cli's selected integration mode.
+- jabr-table-bridge: stable DTO/ABI adapter only if required by Jabr-engine's selected integration mode.
 
 Do not split crates prematurely. Keep the first vertical slice in jabr-table-core; extract functions, IO, or bridge crates when the public APIs and dependency sets justify it.
 
@@ -52,7 +52,7 @@ Do not split crates prematurely. Keep the first vertical slice in jabr-table-cor
 - Lists may be heterogeneous and nested within a documented depth limit.
 - Tables have stable row and column IDs; cell order is defined by the ordered column list.
 - Errors are values with stable codes and structured diagnostics, not empty cells.
-- Units and quantities must follow the Jabr-cli/Calcpad engine's quantity contract. Do not create a competing unit system in Jabr-table.
+- Units and quantities remain owned by Jabr Math. Table operations may accept plain numeric/data inputs but must not create a competing quantity or unit system.
 
 ## 4. Calcpad engine bridge
 
@@ -66,36 +66,34 @@ The table data-operation contract is the highest-priority integration boundary. 
 - Schema/API version and capability information.
 - Optional source provenance (worksheet block ID, range or import origin) as metadata—not as a calculation dependency.
 
-### What stays in Jabr-cli
+### What stays in Jabr Math and Jabr-engine
 
-- Parsing worksheet expressions and function-call syntax.
-- Resolving names, variables, local scopes and assignments.
-- Dependency tracking, recalculation ordering and stale-result protection.
-- Unit parsing, dimensions, conversion policy and engineering quantity semantics.
-- Translating worksheet-level function calls to Jabr-table operations.
+**Jabr Math** owns parsing worksheet expressions and function-call syntax, AST construction, mathematical values, quantities, units, dimensions, conversions and expression evaluation. It does not own worksheet-wide graph construction or recalculation scheduling.
+
+**Jabr-engine** owns worksheet node/port mapping, symbol binding across blocks and table columns, dependency graph construction, recalculation ordering, stale-result protection, scheduling, and the lifecycle of results held in Kernel's generic ResultStore<V>. Engine dispatches supported AST-level table operations to Jabr-table; Table never sees Math result values or parses authored cell text.
 
 ### Integration strategy
 
 1. First expose idiomatic Rust APIs from jabr-table-core; keep them callable in-process by Rust consumers.
-2. Inspect Jabr-cli's actual Calcpad engine packaging and runtime before choosing the bridge transport.
-3. Prefer a direct Rust dependency when both components can be built in one compatible Rust workspace/process.
-4. If Jabr-cli is a separate process or language boundary, use a versioned JSON request/response protocol over the existing worker/RPC boundary. Avoid a premature C ABI or WASM layer.
-5. Add a thin adapter in Jabr-cli. It maps AST function calls and engine values to Jabr-table types; it does not reimplement the operations.
-6. Prove parity: direct Rust call and worksheet-dispatched call must produce the same value/error for the same inputs.
+2. Inspect Jabr-engine's chosen integration with the Jabr Math facade before selecting transport.
+3. Prefer a direct Rust dependency when the independent repositories can be consumed in one compatible Rust process without creating a shared workspace.
+4. If Engine is a separate process or language boundary, use a versioned JSON request/response protocol over the selected worker/RPC boundary. Avoid a premature C ABI or WASM layer.
+5. Add a thin adapter in Jabr-engine. It maps Math AST function calls and Engine-owned data to Jabr-table APIs; it does not reimplement table operations.
+6. Prove parity: direct Rust call and Engine-dispatched call must produce the same value/error for the same inputs.
 
-Do not choose FFI, WASM, JSON-RPC, or a subprocess until the Jabr-cli runtime and build layout have been inspected. The bridge contract should not depend on the transport.
+Do not choose FFI, WASM, JSON-RPC, or a subprocess until the Jabr-engine and Jabr Math runtime/build layouts have been inspected. The bridge contract should not depend on the transport.
 
 ### First bridge vertical slice
 
 - Matrix and Table cross the bridge with schema version and exact scalar values.
 - Matrix → Table and Table → Matrix are callable operations.
 - Invalid dimensions, unknown schema versions, invalid column indices, and unsupported coercions return structured errors.
-- A Jabr-cli integration test dispatches a worksheet function to the same Rust conversion implementation.
+- A Jabr-engine integration test dispatches a worksheet function to the same Rust conversion implementation.
 - A standalone Rust test calls the function directly and compares output.
 
 ## 5. Spreadsheet and engineering function priorities
 
-Implement functions as typed Rust operations over values/ranges. The Calcpad/Jabr-cli layer parses syntax and dispatches calls.
+Implement functions as pure Rust operations over explicit data/range inputs. Math parses syntax and exposes the AST call; Engine dispatches the operation and manages its result.
 
 Suggested order:
 1. Range primitives: shape, indexing, slicing, flattening, transpose.
@@ -110,7 +108,7 @@ Suggested order:
 Engineering priorities:
 - Exact decimal handling where practical.
 - Clear distinction between empty, zero, text, and error.
-- Unit-aware values passed through the Calcpad/Jabr-cli quantity contract.
+- Unit-aware values follow the Jabr Math quantity contract; Table does not own unit semantics.
 - Deterministic results and documented numerical tolerances.
 - Explicit shape/dimension diagnostics.
 - No silent coercion of text to numbers unless the function's policy says so.
