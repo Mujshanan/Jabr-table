@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "result": {
+    "operation": "table.import",
+    "numeric_policy": "approximate_f64",
+    "lossy_numeric_cells": 1
+  },
+  "diagnostics": [
+    {
+      "code": "table.import.csv.numeric_precision_loss",
+      "severity": "warning",
+      "message": "A numeric value was imported using the configured approximate representation",
+      "span": null
+    }
+  ]
+}
