@@ -13,14 +13,15 @@ The product uses AFFiNE/BlockSuite as its document host. The following is the ow
 | Plot | Jabr-UI | No separate plot-engine repository currently established; data comes from Jabr-math/Jabr-table | Plot rendering stays in UI; typed series data crosses existing math/table adapters |
 | Diagram | Jabr-UI | Jabr-diagram (diagram model and geometry engine) | Rust bridge only if/when the engine core is Rust; current repository contents do not establish a Rust/WASM API yet |
 | Text / prose | AFFiNE native paragraph where possible; Jabr-UI only for Jabr-specific note semantics | None | No Rust bridge |
-| Root / worksheet container | AFFiNE owns production document root; Jabr-UI owns worksheet orchestration | None | No Rust bridge |
+| Root / worksheet container | AFFiNE owns the production document root; Jabr-UI owns authored block/document UI; Jabr-engine owns worksheet orchestration | None | No Rust bridge |
 
 **Important:** Matrix and Vector are distinct document block presentations, but they do not require separate engine repositories. Plot is a Jabr-UI block, not an excuse to create another engine repository before the data/plot contract requires it. Text should use native AFFiNE paragraph behavior whenever possible.
 
 ## 2. Ownership boundaries
 
 - **AFFiNE/BlockSuite:** production editor shell, root/page lifecycle, block identity/order, Yjs persistence/collaboration, document undo/redo, host selection and drag/drop.
-- **Jabr-UI:** custom block schemas/views, document presentation, contextual editing controls, transient result state, orchestration, host adapters, and integration tests.
+- **Jabr-UI:** custom block schemas/views, document presentation, contextual editing controls, authored document integration, transient rendering cache, host adapters, and integration tests.
+- **Jabr-engine** (planned; repository not yet created): worksheet node/port mapping, cross-block dependency graph, scheduling/recalculation orchestration, and calculation-result lifecycle.
 - **Jabr-math:** parsing/evaluation/calculation semantics and Rust engine API. Its test UI remains a minimal engine workbench.
 - **Jabr-table:** typed tabular data, lookup/aggregation, interchange, and dense matrix/vector primitives. No UI, BlockSuite, Yjs, or formula parser.
 - **Jabr-diagram:** diagram model, geometry, rendering/export core and its independently testable workbench. No final product shell.
@@ -115,14 +116,14 @@ The UI may translate diagnostics into block-local messages, cell markers, or sou
 - Render as document content, not a spreadsheet app window.
 - Support stable row/column identity, cell selection/editing, headers, paste, resize, add/remove rows and columns, empty/error states, and internal overflow handling.
 - Contextual actions appear on focus/selection; do not persist selection/focus.
-- Preserve typed cell values and schema/column metadata.
+- Preserve typed cell values and schema/column metadata. The current Rust `CellValue::Text` is not a formula parser or a complete authored formula-source contract; formula source must remain authored text and be evaluated by Jabr-math through Engine.
 - Large tables need virtualization only when profiling shows it is required.
 
 **Rust bridge**
 - Rust core remains UI-agnostic and serializable; no BlockSuite/Yjs dependency.
-- Expose typed operations for table CRUD, lookup/aggregation, and interchange.
-- Use stable row/column IDs in DTOs. Use positions only as operation arguments after resolving them against a revisioned snapshot.
-- Include table revision and request ID; reject responses for stale revisions.
+- Expose typed operations for table CRUD, lookup/aggregation, and interchange. Do not treat the current `Number(f64)` representation as exact decimal/rational arithmetic.
+- Use stable row/column IDs in DTOs. Use positions only as operation arguments after resolving them against an Engine-supplied revisioned snapshot.
+- Include request ID and the Engine-supplied source/table revision. Engine/UI reject responses for stale revisions; Table does not own worksheet response scheduling.
 - WASM binding is a planned adapter, not a current capability unless the repository has implemented and tested it. Keep native Rust API authoritative and add cross-target contract tests before UI integration.
 - CSV/TSV/JSON/XML import/export must enforce size/row/column limits and return structured validation diagnostics.
 
