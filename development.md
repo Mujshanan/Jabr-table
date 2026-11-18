@@ -44,6 +44,7 @@ This prototype deliberately uses local in-memory sample data. It does not yet de
 **Goal:** establish the visual language, shared table presentation, and basic interactions.
 
 - [x] Scaffold a standalone TypeScript/Lit/Vite application.
+- [x] Verify TypeScript typecheck and production build in GitHub Actions CI.
 - [x] Define Engineering Table and Database Table view modes.
 - [x] Add sample engineering section records.
 - [x] Add cell editing, row insertion, column insertion, search, sorting, CSV export, and CSV import.
@@ -178,6 +179,7 @@ Do not create every package before it is needed. Extract modules when the interf
 - [x] Add row and column
 - [x] Search and column sorting
 - [x] CSV import/export
+- [x] CI typecheck and production build
 - [ ] Chromium E2E validation
 - [ ] TSV clipboard handling
 - [ ] Column type editing and filter controls
