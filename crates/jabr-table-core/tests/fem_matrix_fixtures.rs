@@ -17,7 +17,12 @@ fn assert_matrix_close(actual: &DenseMatrix, expected: &DenseMatrix) {
         (actual.rows(), actual.columns()),
         (expected.rows(), expected.columns())
     );
-    for (index, (actual, expected)) in actual.as_slice().iter().zip(expected.as_slice()).enumerate() {
+    for (index, (actual, expected)) in actual
+        .as_slice()
+        .iter()
+        .zip(expected.as_slice())
+        .enumerate()
+    {
         assert_close(*actual, *expected);
         assert!(actual.is_finite(), "entry {index} is not finite");
     }
@@ -52,7 +57,12 @@ fn two_dimensional_beam_local_stiffness_fixture() {
     let expected = matrix(vec![
         vec![12.0 * factor, 12.0 * factor, -12.0 * factor, 12.0 * factor],
         vec![12.0 * factor, 16.0 * factor, -12.0 * factor, 8.0 * factor],
-        vec![-12.0 * factor, -12.0 * factor, 12.0 * factor, -12.0 * factor],
+        vec![
+            -12.0 * factor,
+            -12.0 * factor,
+            12.0 * factor,
+            -12.0 * factor,
+        ],
         vec![12.0 * factor, 8.0 * factor, -12.0 * factor, 16.0 * factor],
     ]);
     let actual = matrix(vec![
