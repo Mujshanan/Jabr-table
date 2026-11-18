@@ -61,13 +61,15 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 
 ### Stage 1 — Lookup and aggregation PoC
 
-- [ ] Exact-match `MATCH`.
-- [ ] Exact-match `VLOOKUP` and `HLOOKUP`.
-- [ ] Numeric `MAX` and `MIN`.
-- [ ] Explicit behavior for duplicates, missing keys, empty values, and type mismatches.
-- [ ] Add approximate matching only with documented ordering requirements and tests.
+- [x] Exact-match `MATCH` (`match_index`, 1-based result).
+- [x] Exact-match `VLOOKUP` and `HLOOKUP` (1-based return row/column).
+- [x] Numeric `MAX` and `MIN` (ignore empty, text, and boolean range values).
+- [x] Explicit behavior for duplicates, missing keys, empty ranges, invalid indexes, and ragged lookup tables.
+- [ ] Decide whether approximate lookup is needed; do not add it without explicit ordering semantics and tests.
 
 **Exit criteria:** the requested functions work as independently testable APIs without a formula parser.
+
+**Current implementation note:** lookup operations use exact equality and return the first match. `MATCH` returns a 1-based position. `VLOOKUP` searches the first column; `HLOOKUP` searches the first row. `MAX`/`MIN` return `Option<f64>`, with `None` when no finite numeric values exist.
 
 ### Stage 2 — Data interchange MVP
 
