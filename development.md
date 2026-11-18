@@ -1,4 +1,6 @@
-# Jabr-table Development Plan
+# Jabr Table Development Plan
+
+> **Architecture baseline (2026-11-18):** Jabr Table owns table structures, stable table/row/column/cell identity, typed data operations and interchange. Jabr Math owns parsing, AST, values, units and expression evaluation. Jabr-engine (planned; repository not yet created) owns worksheet graph construction, cross-block bindings, scheduling and result lifecycle. Jabr-kernel provides generic NodeId/Port, Revision, Snapshot<T>, ResultStore<V>, graph, diagnostic, span and envelope primitives only. Jabr-UI owns BlockSuite/Yjs authored document state and presentation.
 
 ## Purpose
 
@@ -6,7 +8,7 @@ Jabr-table is the **data and computation engine** for tabular engineering data i
 
 - **Jabr-table:** table data model, data operations, interchange, and matrix utilities.
 - **Jabr-UI:** all visual presentation, editing interactions, BlockSuite integration, and final product integration.
-- **Jabr-CLI:** calculation language, expression parsing/evaluation, and engineering calculation semantics.
+- **Jabr-math:** calculation language, expression parsing/evaluation, and engineering calculation semantics.
 
 Jabr-table must expose small, stable APIs and must not implement UI components, a standalone editor, or a second formula language.
 
@@ -28,7 +30,7 @@ Initial functions:
 - `VLOOKUP`, `HLOOKUP`, and `MATCH` semantics.
 - Numeric `MAX` and `MIN` aggregation.
 
-These are library operations, not a formula parser. Formula syntax, dependency tracking, and worksheet evaluation belong behind the Jabr-CLI/formula-engine boundary. Evaluate Formualizer as an implementation candidate only after defining and testing the adapter contract.
+These are library operations, not a formula parser. Formula syntax, AST and expression evaluation belong to Jabr Math; cross-block dependency construction, worksheet scheduling and result lifecycle belong to Jabr-engine. Table exposes pure data operations and does not parse formulas or evaluate Math expressions.
 
 ### Data interchange
 
@@ -105,7 +107,7 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 ### Stage 4 — Integration contract
 
 - [ ] Publish Rust API and serialization contracts for Jabr-UI.
-- [ ] Define adapter boundary for Jabr-CLI formula evaluation.
+- [ ] Define adapter boundary for Jabr-math formula evaluation.
 - [ ] Keep persistence/collaboration ownership with Jabr-UI/BlockSuite.
 - [ ] Add cross-repository contract fixtures and compatibility tests.
 
@@ -117,7 +119,7 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 - No BlockSuite blocks, Yjs document ownership, or visual components.
 - No full Excel clone, XLSX workbook fidelity, macros, or pivot tables.
 - No SQL database engine.
-- No formula language or expression parser duplicating Jabr-CLI.
+- No formula language or expression parser duplicating Jabr-math.
 - No full FEM solver, meshing, or structural design checks.
 
 ## Initial repository layout
