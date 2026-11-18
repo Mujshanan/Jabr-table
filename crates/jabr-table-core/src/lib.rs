@@ -2,6 +2,7 @@
 
 pub mod functions;
 pub mod interchange;
+pub mod matrix;
 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
