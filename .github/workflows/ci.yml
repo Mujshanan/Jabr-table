@@ -23,6 +23,8 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run tests
         run: cargo test --workspace --all-targets
+      - name: Compile optional matrix backend benchmark
+        run: cargo bench -p jabr-table-core --bench matrix_backend_compare --features backend-bench --no-run
       - name: Run Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Build documentation
