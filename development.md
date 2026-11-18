@@ -12,26 +12,24 @@ The visual editor is a separate project: [Mujshanan/Jabr-UI](https://github.com/
 
 ## 2. Repository ownership and call direction
 
-    Jabr-UI (BlockSuite custom blocks; authored document state)
-        | typed commands / versioned payloads
+    Jabr-UI (BlockSuite UI; authored document state)
+        | versioned requests / source revisions
         v
-    Jabr-cli (Calcpad worksheet engine; parse, evaluate, units, dependencies)
-        | Rust API calls / bridge adapter
-        v
-    Jabr-table (typed data, ranges, conversions, matrix functions, data I/O)
-        |
-        v
-    CivilKit and other engineering consumers
+    Jabr-engine (worksheet graph and calculation orchestration)
+        |------> Jabr-math (parse, AST, evaluate, units)
+        `------> Jabr-table (table text, structure, data operations)
 
 **Ownership rules**
 
-- Jabr-table owns canonical Table, Vector, Matrix, List and scalar data models, validation, conversions, range operations, supported spreadsheet functions, and CSV/XLSX semantics.
-- Jabr-cli owns worksheet syntax, AST, symbol lookup, variable assignment and scope, dependency graph, units/dimensional analysis, evaluation lifecycle, and orchestration.
-- Jabr-UI owns BlockSuite schemas/views, keyboard and selection behavior, menus, paste interaction, persistence and collaboration.
-- CivilKit is a consumer of stable Rust APIs; it must not need BlockSuite or a browser.
+- Jabr-table owns table structure, stable identities, authored cell text, metadata, import/export and table-specific operations.
+- Jabr-math owns worksheet syntax, AST, mathematical values, units, dimensional analysis and expression evaluation.
+- Jabr-engine owns worksheet graph construction, symbol binding, dependency resolution, recalculation ordering, scheduling and the lifecycle of Math results stored in Kernel's generic ResultStore<V>.
+- Jabr-kernel owns generic NodeId/Port, Revision, Snapshot<T>, ResultStore<V>, graph primitives, diagnostics and spans; it does not own variables or Math values.
+- Jabr-UI owns BlockSuite schemas/views, keyboard and selection behavior, menus, paste interaction, authored document persistence and collaboration.
+- CivilKit and other engineering consumers may consume stable Rust APIs; they must not need BlockSuite or a browser.
 - Never implement the same numerical/data operation independently in UI and CLI.
 
-The normal call direction is UI → CLI bridge → Jabr-table Rust core. For non-worksheet callers, a direct Rust library API may be used. Do not let Jabr-table call back into the editor.
+The normal product direction is UI → Engine → Math/Table/Kernel. Engine selects the appropriate Math and Table APIs; Table never calls back into Math, Engine, or the editor.
 
 ## 3. Rust workspace design
 
@@ -58,7 +56,7 @@ Do not split crates prematurely. Keep the first vertical slice in jabr-table-cor
 
 ## 4. Calcpad engine bridge
 
-The bridge is the highest-priority integration boundary. It should be small, deterministic, versioned, and independent of the UI.
+The table data-operation contract is the highest-priority integration boundary. Engine is the worksheet orchestrator; Math owns syntax and evaluation; Table owns the reusable data operations. Keep the contract small, deterministic, versioned, and independent of the UI.
 
 ### What the bridge carries
 
@@ -191,11 +189,12 @@ Defer formula bars, pivot tables, charts, filters UI, elaborate formatting, colu
 - [ ] Add serialization round-trip and unsupported schema tests.
 - [ ] Run CI and fix all format/lint/test failures.
 
-### Milestone 2 — Calcpad bridge contract
-- [ ] Inspect Jabr-cli engine/runtime and identify the current Calcpad execution boundary.
-- [ ] Decide in-process Rust API vs existing worker/RPC transport based on evidence.
-- [ ] Freeze versioned request/response DTOs and stable error codes.
-- [ ] Add direct Rust and bridge parity tests.
+### Milestone 2 — Math/Engine table-operation contract
+- [ ] Inspect Jabr-math's public facade and Jabr-engine integration design.
+- [ ] Keep table-cell authored text separate from Math evaluation values.
+- [ ] Define how Engine dispatches supported AST-level table operations to Jabr-table.
+- [ ] Freeze versioned data-operation DTOs and stable error codes.
+- [ ] Add direct Rust and Engine-dispatch parity tests.
 
 ### Milestone 3 — Core range and spreadsheet functions
 - [ ] Add typed range abstraction.
