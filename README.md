@@ -1,31 +1,15 @@
 # Jabr-table
 
-Jabr-table is the engineering data-table and database presentation layer in the Jabr ecosystem. It is developed independently and will later integrate with Jabr-UI / BlockSuite and Jabr-CLI.
+Jabr-table is the Rust data and computation engine for engineering tables in the Jabr ecosystem.
 
-The first milestone is UI-first:
+- **Jabr-table:** typed table model, data operations, interchange, and matrix utilities.
+- **Jabr-UI:** all UI, BlockSuite presentation, and final product integration.
+- **Jabr-CLI:** calculation language, parsing, evaluation, and engineering calculation semantics.
 
-- **Engineering Table:** spreadsheet-like cell editing and engineering data entry.
-- **Database Table:** typed columns, structured records, search, and sorting.
+This repository does not contain a standalone table editor or UI.
 
-The current prototype uses in-memory sample data. It does not yet provide persistence, collaboration, formula evaluation, matrix calculations, or FEM analysis.
+## Development
 
-## Requirements
+See [development.md](./development.md) for the staged PoC-to-MVP plan.
 
-- Node.js `^20.19.0 || >=22.12.0`
-- pnpm `10.34.5`
-
-## Run
-
-```sh
-pnpm install
-pnpm dev
-```
-
-## Validate
-
-```sh
-pnpm typecheck
-pnpm build
-```
-
-See [development.md](./development.md) for the PoC-to-MVP roadmap and scope.
+The first milestone is a minimal, tested Rust table core. Formula parsing, UI, collaboration, and FEM solving are outside the initial PoC.
