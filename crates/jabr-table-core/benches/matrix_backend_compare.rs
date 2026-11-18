@@ -50,18 +50,12 @@ fn benchmark_size(size: usize, iterations: usize) {
 
     let native_left = DenseMatrix::new(size, size, left_values.clone()).unwrap();
     let native_right = DenseMatrix::new(size, size, right_values.clone()).unwrap();
-    let faer_left = Mat::from_fn(size, size, |row, column| {
-        left_values[row * size + column]
-    });
-    let faer_right = Mat::from_fn(size, size, |row, column| {
-        right_values[row * size + column]
-    });
-    let nalgebra_left = DMatrix::from_fn(size, size, |row, column| {
-        left_values[row * size + column]
-    });
-    let nalgebra_right = DMatrix::from_fn(size, size, |row, column| {
-        right_values[row * size + column]
-    });
+    let faer_left = Mat::from_fn(size, size, |row, column| left_values[row * size + column]);
+    let faer_right = Mat::from_fn(size, size, |row, column| right_values[row * size + column]);
+    let nalgebra_left =
+        DMatrix::from_fn(size, size, |row, column| left_values[row * size + column]);
+    let nalgebra_right =
+        DMatrix::from_fn(size, size, |row, column| right_values[row * size + column]);
 
     // Verify numerical equivalence before recording any timings.
     let native_result = native_left.multiply(&native_right).unwrap();
@@ -110,12 +104,10 @@ fn benchmark_size(size: usize, iterations: usize) {
     );
 
     if size == 4 {
-        let fixed_left = SMatrix::<f64, 4, 4>::from_fn(|row, column| {
-            left_values[row * size + column]
-        });
-        let fixed_right = SMatrix::<f64, 4, 4>::from_fn(|row, column| {
-            right_values[row * size + column]
-        });
+        let fixed_left =
+            SMatrix::<f64, 4, 4>::from_fn(|row, column| left_values[row * size + column]);
+        let fixed_right =
+            SMatrix::<f64, 4, 4>::from_fn(|row, column| right_values[row * size + column]);
         report(
             "nalgebra SMatrix",
             measure(
