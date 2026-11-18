@@ -11,7 +11,9 @@ pub struct MatrixToTableOptions {
 
 impl Default for MatrixToTableOptions {
     fn default() -> Self {
-        Self { use_column_labels: true }
+        Self {
+            use_column_labels: true,
+        }
     }
 }
 
@@ -25,7 +27,10 @@ pub struct TableToMatrixOptions {
 
 impl Default for TableToMatrixOptions {
     fn default() -> Self {
-        Self { columns: None, include_headers: false }
+        Self {
+            columns: None,
+            include_headers: false,
+        }
     }
 }
 
@@ -54,9 +59,16 @@ pub fn matrix_to_table(
     let rows = (0..matrix.rows)
         .map(|row_index| Row {
             id: format!("{}:row:{}", matrix.id, row_index),
-            label: if matrix.row_labels.is_empty() { None } else { Some(matrix.row_labels[row_index].clone()) },
+            label: if matrix.row_labels.is_empty() {
+                None
+            } else {
+                Some(matrix.row_labels[row_index].clone())
+            },
+            
             cells: (0..matrix.columns)
-                .map(|column_index| matrix.values[row_index * matrix.columns + column_index].clone())
+                .map(|column_index| {
+                    matrix.values[row_index * matrix.columns + column_index].clone()
+                })
                 .collect(),
         })
         .collect();
@@ -83,12 +95,15 @@ pub fn table_to_matrix(
 
     for &index in &selected {
         if index >= table.columns.len() {
-            return Err(DataError::ColumnIndex { index, columns: table.columns.len() });
+            return Err(DataError::ColumnIndex {
+                index,
+                columns: table.columns.len(),
+            });
         }
     }
 
     let mut values = Vec::with_capacity(
-        (table.rows.len() + (if options.include_headers { 1 } else { 0 })) * selected.len()
+        (table.rows.len() + (if options.include_headers { 1 } else { 0 })) * selected.len(),
     );
     if options.include_headers {
         values.extend(
@@ -102,7 +117,10 @@ pub fn table_to_matrix(
     }
 
     let matrix_rows = table.rows.len() + (if options.include_headers { 1 } else { 0 });
-    let column_labels = selected.iter().map(|&index| table.columns[index].title.clone()).collect();
+    let column_labels = selected
+        .iter()
+        .map(|&index| table.columns[index].title.clone())
+        .collect();
     let row_labels = if table.rows.iter().any(|row| row.label.is_some()) {
         table
             .rows
