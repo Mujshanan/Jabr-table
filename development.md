@@ -97,10 +97,11 @@ Use explicit import/export adapters. Preserve typed values where possible. XML m
 - [x] Closed-form 2D Euler-Bernoulli beam local stiffness fixture.
 - [x] 2D truss coordinate transformation and global stiffness fixture.
 - [x] Arithmetic overflow rejection tests.
-- [ ] Benchmark faer and nalgebra against representative element-matrix fixtures.
+- [x] Add an optional, single-threaded benchmark harness comparing DenseMatrix, faer, and nalgebra on representative matrix sizes.
+- [ ] Run benchmarks on target Windows and Linux hardware and record environment plus raw results.
 - [ ] Decide whether to retain the small dense implementation or delegate operations to a numerical backend.
 
-**Current implementation:** matrix::DenseMatrix is a dependency-light, row-major dense matrix for small element-level calculations. Its integration fixtures verify the 2D truss axial stiffness matrix, the 2D Euler-Bernoulli beam local stiffness matrix, and the transformed global stiffness matrix for a 30-degree truss. Deterministic identity checks cover rectangular shapes, and overflow tests ensure arithmetic does not return non-finite matrix/vector results. Fixture values are derived from the closed-form element stiffness equations and checked independently of the implementation's matrix multiplication path. Backend benchmarking remains outstanding. Sparse global FEM solving remains out of scope for this stage.
+**Current implementation:** matrix::DenseMatrix is a dependency-light, row-major dense matrix for small element-level calculations. Its integration fixtures verify the 2D truss axial stiffness matrix, the 2D Euler-Bernoulli beam local stiffness matrix, and the transformed global stiffness matrix for a 30-degree truss. Deterministic identity checks cover rectangular shapes, and overflow tests ensure arithmetic does not return non-finite matrix/vector results. Fixture values are derived from the closed-form element stiffness equations and checked independently of the implementation's matrix multiplication path. An optional backend benchmark harness is available at `crates/jabr-table-core/benches/matrix_backend_compare.rs`; methodology and workloads are documented in `docs/matrix-backend-benchmark.md`. The candidate libraries are feature-gated and excluded from default builds. Actual performance measurements and backend selection remain outstanding. Sparse global FEM solving remains out of scope for this stage.
 
 ### Stage 4 — Integration contract
 
