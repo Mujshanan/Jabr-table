@@ -337,13 +337,11 @@ class JabrTableApp extends LitElement {
           <div class="brand"><span class="brand-mark">J</span><span class="brand-word">jabr<span style="color:#8fa2b8">/</span>table</span></div>
           <div>
             <div class="side-label">Workspace</div>
-            <button class="side-link active"><span class="side-icon">▦</span><span>Data tables</span></button>
-            <button class="side-link"><span class="side-icon">⌘</span><span>Recent</span></button>
+            <div class="side-link active" aria-current="page"><span class="side-icon">▦</span><span>Data tables</span></div>
           </div>
           <div>
             <div class="side-label">Current table</div>
-            <button class="side-link active"><span class="side-icon">▤</span><span>Steel sections</span></button>
-            <button class="side-link"><span class="side-icon">＋</span><span>New table</span></button>
+            <div class="side-link active" aria-current="page"><span class="side-icon">▤</span><span>Steel sections</span></div>
           </div>
           <div class="workspace-note"><strong>Engineering workspace</strong>Prototype data is stored in memory. Persistence and collaboration are planned for the document integration stage.</div>
         </aside>
