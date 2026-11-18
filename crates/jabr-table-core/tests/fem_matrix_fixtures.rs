@@ -33,7 +33,10 @@ fn two_dimensional_truss_local_stiffness_fixture() {
     // Axial bar: E=200, A=0.01, L=2 => EA/L = 1.
     // DOF order: [u1, v1, u2, v2].
     let axial_operator = matrix(vec![vec![-1.0, 0.0, 1.0, 0.0]]);
-    let local = axial_operator.transpose().multiply(&axial_operator).unwrap();
+    let local = axial_operator
+        .transpose()
+        .multiply(&axial_operator)
+        .unwrap();
     let expected = matrix(vec![
         vec![1.0, 0.0, -1.0, 0.0],
         vec![0.0, 0.0, 0.0, 0.0],
@@ -42,9 +45,7 @@ fn two_dimensional_truss_local_stiffness_fixture() {
     ]);
     assert_matrix_close(&local, &expected);
     assert_eq!(
-        local
-            .multiply_vector(&[1.0, 0.0, -1.0, 0.0])
-            .unwrap(),
+        local.multiply_vector(&[1.0, 0.0, -1.0, 0.0]).unwrap(),
         vec![2.0, 0.0, -2.0, 0.0]
     );
 }
