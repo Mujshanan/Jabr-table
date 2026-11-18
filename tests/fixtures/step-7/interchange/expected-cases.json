@@ -1,0 +1,59 @@
+{
+  "fixture_set": "jabr-table-step-7-interchange",
+  "cases": [
+    {
+      "file": "csv/quoted-fields.csv",
+      "format": "csv",
+      "expected": "success",
+      "assertions": ["quoted delimiter", "escaped quote", "finite numeric inference"]
+    },
+    {
+      "file": "csv/embedded-newlines.csv",
+      "format": "csv",
+      "expected": "success",
+      "assertions": ["embedded newline remains inside one field"]
+    },
+    {
+      "file": "csv/unicode-crlf.csv",
+      "format": "csv",
+      "expected": "success",
+      "assertions": ["CRLF records", "UTF-8 Unicode text preserved"]
+    },
+    {
+      "file": "csv/duplicate-headers.csv",
+      "format": "csv",
+      "expected": "policy-dependent",
+      "assertions": ["must reject or deterministically disambiguate; never ambiguous duplicate IDs"]
+    },
+    {
+      "file": "csv/malformed-quoting.csv",
+      "format": "csv",
+      "expected": "failure",
+      "assertions": ["atomic failure", "no partial Table"]
+    },
+    {
+      "file": "xml/canonical-v1.xml",
+      "format": "jabr-table-xml",
+      "expected": "success",
+      "assertions": ["stable table/row/column IDs", "typed values", "deterministic order"]
+    },
+    {
+      "file": "xml/namespaced-fields.xml",
+      "format": "xml",
+      "expected": "success only with expanded-name mapping",
+      "assertions": ["same local name in distinct namespaces is not merged"]
+    },
+    {
+      "file": "xml/whitespace-preservation.xml",
+      "format": "xml",
+      "expected": "success",
+      "assertions": ["text node leading/trailing whitespace preserved"]
+    },
+    {
+      "file": "xml/doctype-rejected.xml",
+      "format": "xml",
+      "expected": "failure",
+      "assertions": ["DOCTYPE/XXE rejected", "no external resource access", "atomic failure"]
+    }
+  ]
+}
