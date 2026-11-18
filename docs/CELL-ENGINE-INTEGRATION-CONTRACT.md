@@ -26,7 +26,7 @@ A cell may contain authored source text, a typed data value, or both:
 - **Math value envelope** is an opaque, versioned payload produced/consumed by Math. It can represent quantities, units, dimensions, exact numeric forms, and other Math-owned values without Table reproducing those types.
 - **Evaluation result and lifecycle** are owned by Engine/Kernel. A table-side cached projection, if retained for rendering or interchange, is a non-authoritative cache and MUST NOT determine freshness, validity, dependency state, or whether a result is current.
 
-A source-bearing cell is not automatically a formula. Engine decides whether and when source is submitted to Math. Math parses it according to the Math language. A text literal must not be reinterpreted as an expression merely because its storage type is text.
+This is Table's serializable data/API representation of cell source; canonical live authoring, collaboration, undo/redo and persistence remain owned by Jabr-UI through BlockSuite/Yjs. A source-bearing cell is not automatically a formula. Engine decides whether and when source is submitted to Math. Math parses it according to the Math language. A text literal must not be reinterpreted as an expression merely because its storage type is text.
 
 Table MUST preserve source text exactly, including whitespace and lexical numeric spelling, unless an explicit edit operation changes it. It MUST NOT silently rewrite references during row/column operations.
 
