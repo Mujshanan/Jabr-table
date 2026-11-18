@@ -112,11 +112,17 @@ pub fn table_to_matrix(
         .map(|&index| table.columns[index].title.clone())
         .collect();
     let row_labels = if table.rows.iter().any(|row| row.label.is_some()) {
-        table
-            .rows
-            .iter()
-            .map(|row| row.label.clone().unwrap_or_default())
-            .collect()
+        let mut labels = Vec::with_capacity(matrix_rows);
+        if options.include_headers {
+            labels.push("Header".to_owned());
+        }
+        labels.extend(
+            table
+                .rows
+                .iter()
+                .map(|row| row.label.clone().unwrap_or_default()),
+        );
+        labels
     } else {
         vec![]
     };
