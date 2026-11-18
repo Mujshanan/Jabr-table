@@ -6,7 +6,10 @@ pub fn validate_matrix(matrix: &JabrMatrix) -> Result<(), DataError> {
     let expected = matrix
         .rows
         .checked_mul(matrix.columns)
-        .unwrap_or(usize::MAX);
+        .ok_or(DataError::MatrixSizeOverflow {
+            rows: matrix.rows,
+            columns: matrix.columns,
+        })?;
     if matrix.values.len() != expected {
         return Err(DataError::MatrixShape {
             rows: matrix.rows,
@@ -81,6 +84,23 @@ fn validate_cell_depth(cell: &CellValue, depth: usize, max: usize) -> Result<(),
 mod tests {
     use super::*;
     use crate::{Column, ColumnType, JabrTable, Row};
+
+    #[test]
+    fn rejects_matrix_dimensions_that_overflow() {
+        let matrix = JabrMatrix {
+            schema_version: 1,
+            id: "overflow".into(),
+            rows: usize::MAX,
+            columns: 2,
+            values: vec![],
+            row_labels: vec![],
+            column_labels: vec![],
+        };
+        assert!(matches!(
+            validate_matrix(&matrix),
+            Err(DataError::MatrixSizeOverflow { .. })
+        ));
+    }
 
     #[test]
     fn rejects_matrix_with_inconsistent_shape() {
