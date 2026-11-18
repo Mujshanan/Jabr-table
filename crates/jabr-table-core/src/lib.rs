@@ -1,5 +1,7 @@
 //! Minimal, UI-independent table data model for Jabr.
 
+pub mod functions;
+
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
@@ -136,13 +138,14 @@ impl Table {
             .find(|row| row.id == row_id)
             .ok_or_else(|| TableError::UnknownRow(row_id.to_owned()))?;
 
-        let matches_type = match (&column.value_type, &value) {
-            (_, CellValue::Empty) | (ColumnType::Any, _) => true,
-            (ColumnType::Text, CellValue::Text(_)) => true,
-            (ColumnType::Number, CellValue::Number(_)) => true,
-            (ColumnType::Boolean, CellValue::Boolean(_)) => true,
-            _ => false,
-        };
+        let matches_type = matches!(
+            (&column.value_type, &value),
+            (_, CellValue::Empty)
+                | (ColumnType::Any, _)
+                | (ColumnType::Text, CellValue::Text(_))
+                | (ColumnType::Number, CellValue::Number(_))
+                | (ColumnType::Boolean, CellValue::Boolean(_))
+        );
 
         if !matches_type {
             return Err(TableError::TypeMismatch(column_id.to_owned()));
