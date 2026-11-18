@@ -2,6 +2,16 @@
 
 **Jabr-table is the Rust data and calculation subsystem for Jabr's engineering worksheet.** It owns typed tables, vectors, matrices, lists, conversions, spreadsheet-style data functions, and CSV/XLSX I/O. Its first priority is a reliable Rust calculation core and a stable bridge to the Calcpad-based worksheet engine—not a large spreadsheet UI.
 
+## Current Jabr architecture boundary
+
+- Table stores authored cell content as text, with stable table/row/column/cell identity and table metadata.
+- Jabr Math parses and evaluates cell text. Table does not parse formulas or depend on Math values.
+- Jabr-engine (planned; repository not yet created) maps worksheet/table structures into calculation nodes, constructs dependencies, schedules evaluation and owns the result lifecycle.
+- Jabr-kernel provides generic primitives only. Its ResultStore<V> is keyed by NodeId and is owned/instantiated by Engine; Table never reads or writes it.
+- Jabr-UI owns BlockSuite blocks, editing interactions, document persistence and presentation.
+
+**Audit note:** the current Rust core has a tagged CellValue enum (Empty/Text/Number/Boolean). This is an existing typed-data model, not the final authored worksheet-cell contract. The next model audit must separate authored cell source text from import/export and table-operation representations without silently treating a table value as Math::Value. Preserve existing lookup, interchange and matrix capabilities during that transition.
+
 ## Repository boundaries
 
 | Repository / layer | Responsibility |
