@@ -112,6 +112,7 @@ pub enum DataError {
     InvalidId { kind: &'static str, id: String },
     #[error("column index {index} is outside table width {columns}")]
     ColumnIndex { index: usize, columns: usize },
+    #[error("row {row_id} has {actual} cells; expected {expected}")]
     RowWidth {
         row_id: String,
         actual: usize,
