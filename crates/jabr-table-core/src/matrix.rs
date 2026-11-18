@@ -86,11 +86,12 @@ impl DenseMatrix {
         }
         let mut result = vec![0.0; self.rows * other.columns];
         for row in 0..self.rows {
+            let output_row = &mut result[row * other.columns..(row + 1) * other.columns];
             for inner in 0..self.columns {
                 let left = self.data[row * self.columns + inner];
-                for column in 0..other.columns {
-                    result[row * other.columns + column] +=
-                        left * other.data[inner * other.columns + column];
+                let right_row = &other.data[inner * other.columns..(inner + 1) * other.columns];
+                for (output, right) in output_row.iter_mut().zip(right_row) {
+                    *output += left * right;
                 }
             }
         }
