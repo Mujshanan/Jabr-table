@@ -98,6 +98,8 @@ pub struct JabrList {
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum DataError {
+    #[error("matrix dimensions {rows}x{columns} exceed the addressable size")]
+    MatrixSizeOverflow { rows: usize, columns: usize },
     #[error("matrix shape {rows}x{columns} does not match {actual} stored values")]
     MatrixShape {
         rows: usize,
