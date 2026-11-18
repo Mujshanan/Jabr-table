@@ -1,0 +1,20 @@
+name: Validate standalone engine demo
+
+on:
+  push:
+    branches:
+      - ui/minimal-engine-demo
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-demo:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check standalone demo JavaScript
+        run: node --check engine-demo/app.js

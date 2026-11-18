@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101923">
+  <meta name="description" content="Jabr Table engine workbench prototype">
+  <title>Jabr Table — Engine Workbench</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">J</span><span>Jabr <b>Table</b><small>ENGINE WORKBENCH</small></span></a>
+    <div class="doc-title"><span class="status-dot"></span> Structural calculation dataset <span class="prototype-tag">UI prototype</span></div>
+    <div class="top-actions"><span class="save-state">Local demo · not saved</span><button id="export-csv" class="button primary">Export CSV</button></div>
+  </header>
+  <main class="app-shell">
+    <nav class="side-nav" aria-label="Workspace navigation">
+      <div class="nav-label">WORKSPACE</div>
+      <button class="nav-item active" data-tab="sheet"><span>▦</span> Table</button>
+      <button class="nav-item" data-tab="matrix"><span>▤</span> Matrix</button>
+      <button class="nav-item" data-tab="xml"><span>⌘</span> XML data</button>
+      <div class="nav-note"><b>Engine boundary</b><p>This harness presents authored data and test inputs. Formula evaluation, lookups, matrix algebra and XML parsing belong to the table engine.</p></div>
+    </nav>
+    <section class="main-area">
+      <div class="page-heading"><div><div class="eyebrow">JABR TABLE / WORKSPACE</div><h1 id="page-title">Table</h1><p id="page-subtitle">Edit a small engineering dataset and inspect cell values.</p></div><div class="dataset-pill"><span class="status-dot"></span> Sample dataset</div></div>
+      <section id="sheet-pane" class="pane">
+        <div class="toolbar">
+          <button id="add-row" class="button">＋ Add row</button><button id="add-column" class="button">＋ Add column</button>
+          <span class="toolbar-divider"></span>
+          <button id="import-csv" class="button">Import CSV</button><input id="csv-file" type="file" accept=".csv,text/csv" hidden>
+          <button id="clear-selection" class="button subtle">Clear selection</button>
+        </div>
+        <div class="formula-row"><div class="name-box" id="cell-address">A1</div><div class="fx">fx</div><input id="formula-input" aria-label="Selected cell value" value="Member" spellcheck="false"><span class="formula-note">Cell value / future formula input</span></div>
+        <div class="grid-frame"><table id="sheet-grid" class="data-grid" aria-label="Editable table"><thead></thead><tbody></tbody></table></div>
+        <div class="grid-status"><span id="table-dimensions">4 columns · 5 rows</span><span id="selection-summary">Select a cell to inspect it</span></div>
+      </section>
+      <section id="matrix-pane" class="pane" hidden>
+        <div class="toolbar"><button id="add-matrix-row" class="button">＋ Add row</button><button id="add-matrix-column" class="button">＋ Add column</button><span class="toolbar-divider"></span><span class="toolbar-hint">Editable matrix input · no operations executed</span></div>
+        <div class="matrix-card"><div class="matrix-title"><div><b>Matrix A</b><small>Numeric input fixture</small></div><span id="matrix-size">3 × 3</span></div><div id="matrix-grid" class="matrix-grid"></div></div>
+        <div class="engine-callout"><b>Planned engine operations</b><span>Transpose · Multiply · Inverse · Determinant · Solve linear system</span></div>
+      </section>
+      <section id="xml-pane" class="pane" hidden>
+        <div class="toolbar"><button id="refresh-xml" class="button">Refresh XML preview</button><span class="toolbar-hint">Preview generated from the current sample table</span></div>
+        <div class="xml-card"><div class="xml-title"><b>XML data preview</b><span>Read-only prototype</span></div><pre id="xml-preview" class="xml-preview"></pre></div>
+        <div class="engine-callout"><b>Planned engine operations</b><span>Parse · Validate schema · Query nodes · Map XML records to table rows</span></div>
+      </section>
+    </section>
+    <aside class="right-panel">
+      <div class="panel-heading">CELL INSPECTOR</div>
+      <div id="cell-inspector" class="cell-inspector"><div class="inspector-icon">▦</div><b>No cell selected</b><p>Select a cell in the table to inspect its address, value and column type.</p></div>
+      <div class="panel-divider"></div>
+      <div class="panel-heading">TEST FUNCTIONS</div>
+      <div class="function-list"><div><code>VLOOKUP</code><span>Vertical lookup</span></div><div><code>HLOOKUP</code><span>Horizontal lookup</span></div><div><code>MATCH</code><span>Find position</span></div><div><code>MAX / MIN</code><span>Extrema</span></div><div><code>MATRIX</code><span>Linear algebra</span></div><div><code>XML</code><span>Structured data</span></div></div>
+      <div class="panel-footnote">Function names are a test roadmap, not implemented calculations.</div>
+    </aside>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>
