@@ -1,199 +1,124 @@
 # Jabr-table Development Plan
 
-## Product direction
+## Purpose
 
-Jabr-table is the engineering data-table and database presentation layer in the Jabr ecosystem. It is developed independently and will later integrate with Jabr-UI / BlockSuite and Jabr-CLI.
+Jabr-table is the **data and computation engine** for tabular engineering data in the Jabr ecosystem. It is a Rust library, not a standalone application.
 
-The first release is **UI-first**. Establish a clear, usable table and database experience before introducing formula evaluation, numerical matrix computation, or FEM workflows.
+- **Jabr-table:** table data model, data operations, interchange, and matrix utilities.
+- **Jabr-UI:** all visual presentation, editing interactions, BlockSuite integration, and final product integration.
+- **Jabr-CLI:** calculation language, expression parsing/evaluation, and engineering calculation semantics.
 
-### Product surfaces
+Jabr-table must expose small, stable APIs and must not implement UI components, a standalone editor, or a second formula language.
 
-1. **Engineering Table** — a spreadsheet-like grid for direct cell editing, rectangular selection, keyboard navigation, copy/paste, and engineering data entry.
-2. **Database Table** — a structured record view with named columns, data types, sorting, filtering/search, and record management.
+## Scope and architecture
 
-These are two presentations over a shared table model, not separate data systems.
+### Core table model
 
-## Principles and boundaries
+- Tables, columns, rows, and typed cell values.
+- Stable row and column IDs; never use row/column positions as durable identity.
+- Basic create/read/update/delete operations.
+- Validation for column types and row shape.
+- Framework-independent, serializable data structures.
+- No BlockSuite or Yjs dependency in the core.
 
-- Keep the table model independent of the UI framework and BlockSuite.
-- Keep Jabr-table independently developable; integrate through explicit adapters later.
-- BlockSuite/Yjs will own persisted collaborative document state after integration.
-- Do not let a formula library own the Jabr document or table model.
-- Do not store large FEM global stiffness matrices as millions of collaborative table cells.
-- Use stable row and column IDs. Do not use mutable row/column positions as durable identity.
-- Keep imported source/provenance metadata separate from cell values.
-- Make bulk paste/import a single logical undoable operation after document integration.
-- Keep the initial UI focused; avoid building an Excel clone or a full database application.
+### Data operations
 
-## Technology direction
+Initial functions:
+- Exact and approximate lookup primitives.
+- `VLOOKUP`, `HLOOKUP`, and `MATCH` semantics.
+- Numeric `MAX` and `MIN` aggregation.
 
-The initial UI prototype follows the Jabr-UI toolchain for compatibility:
+These are library operations, not a formula parser. Formula syntax, dependency tracking, and worksheet evaluation belong behind the Jabr-CLI/formula-engine boundary. Evaluate Formualizer as an implementation candidate only after defining and testing the adapter contract.
 
-- TypeScript
-- Vite
-- Lit
-- pnpm 10.34.5
-- Node.js `^20.19.0 || >=22.12.0`
+### Data interchange
 
-This prototype deliberately uses local in-memory sample data. It does not yet depend on BlockSuite/Yjs, Formualizer, faer, or Jabr-CLI.
+- CSV and TSV
+- JSON
+- XML
+
+Use explicit import/export adapters. Preserve typed values where possible. XML must support configurable record elements and field mapping; do not assume every XML document is a flat table. Protect XML parsing against DTD/external-entity expansion and test namespaces and malformed input.
+
+### Matrix utilities
+
+- Small dense matrices and vectors for element-level operations.
+- Evaluate `faer` for numerical operations and sparse solver capabilities.
+- Consider `nalgebra` for small fixed-size geometry/element matrices.
+- Do not store large FEM global sparse matrices as ordinary table cells.
+- FEM assembly, mesh, boundary conditions, and structural design logic are outside Jabr-table; they belong in the engineering calculation layer.
 
 ## Development stages
 
-### Stage 0 — UI foundation (current)
+### Stage 0 — Core table PoC (start here)
 
-**Goal:** establish the visual language, shared table presentation, and basic interactions.
+- [ ] Rust library crate and CI.
+- [ ] Typed cell values and column definitions.
+- [ ] Stable row/column IDs.
+- [ ] Table CRUD operations.
+- [ ] Validation and error types.
+- [ ] Unit tests for valid and invalid operations.
 
-- [x] Scaffold a standalone TypeScript/Lit/Vite application.
-- [x] Verify TypeScript typecheck and production build in GitHub Actions CI.
-- [x] Define Engineering Table and Database Table view modes.
-- [x] Add sample engineering section records.
-- [x] Add cell editing, row insertion, column insertion, search, sorting, CSV export, and CSV import.
-- [ ] Validate the UI in Chromium and refine keyboard/pointer interactions.
-- [ ] Add automated UI tests for core table interactions.
-- [ ] Review the visual design before introducing BlockSuite.
+**Exit criteria:** a UI-independent Rust library can create, inspect, update, and remove tabular data with deterministic behavior and tests.
 
-**Exit criteria:** both views are usable against the same sample dataset; core interactions work without a backend; the app builds and typechecks.
+### Stage 1 — Lookup and aggregation PoC
 
-### Stage 1 — Table interaction PoC
+- [ ] Exact-match `MATCH`.
+- [ ] Exact-match `VLOOKUP` and `HLOOKUP`.
+- [ ] Numeric `MAX` and `MIN`.
+- [ ] Explicit behavior for duplicates, missing keys, empty values, and type mismatches.
+- [ ] Add approximate matching only with documented ordering requirements and tests.
 
-- Define a framework-independent table schema: table, columns, rows, cells, cell values, and data types.
-- Support stable row/column identifiers.
-- Add rectangular range selection and keyboard navigation.
-- Add TSV clipboard copy/paste.
-- Add robust CSV parsing, quoted fields, headers, empty values, and type inference preview.
-- Add JSON import/export.
-- Add XML import/export with configurable record element and field mapping.
-- Preserve unmapped XML attributes/nested content where round-trip fidelity is required.
-- Add unit tests for data model, import/export, and selection behavior.
+**Exit criteria:** the requested functions work as independently testable APIs without a formula parser.
 
-**Exit criteria:** table interactions and data exchange work independently of BlockSuite.
+### Stage 2 — Data interchange MVP
 
-### Stage 2 — Formula PoC
+- [ ] CSV import/export.
+- [ ] TSV import/export.
+- [ ] JSON import/export.
+- [ ] XML import/export with mapping and preview data structures.
+- [ ] Round-trip, malformed-input, type inference, and size-limit tests.
 
-Evaluate Formualizer behind a Jabr-owned formula adapter.
-
-Initial functions:
-- `VLOOKUP`
-- `HLOOKUP`
-- `MATCH`
-- `MAX`
-- `MIN`
-
-Validate exact/approximate matching, missing values, duplicate matches, text/numeric identifiers, empty cells, invalid ranges, dependency updates, and recalculation.
-
-Formualizer is an evaluation candidate only. Jabr-table retains ownership of the table model and authored formulas.
+**Exit criteria:** data can be exchanged without coupling to UI or document storage.
 
 ### Stage 3 — Matrix PoC
 
-Evaluate `faer` as the primary numerical backend candidate, with `nalgebra` as a possible complement for small fixed-size geometry and element matrices.
+- [ ] Dense matrix/vector value representation or adapter contract.
+- [ ] Addition, subtraction, multiplication, transpose, and matrix-vector multiplication.
+- [ ] Dimension and numerical error handling.
+- [ ] Benchmark `faer` and `nalgebra` against small FEM element-matrix fixtures.
 
-Initial operations:
-- Matrix addition and subtraction
-- Matrix multiplication
-- Scalar multiplication
-- Transpose
-- Matrix-vector multiplication
+**Exit criteria:** correct small dense matrix operations with verified test fixtures. Sparse global FEM solving remains out of scope for this stage.
 
-Start with small dense matrices. Validate dimensions, errors, precision, and results against independent fixtures.
+### Stage 4 — Integration contract
 
-### Stage 4 — Engineering/FEM demonstration
+- [ ] Publish Rust API and serialization contracts for Jabr-UI.
+- [ ] Define adapter boundary for Jabr-CLI formula evaluation.
+- [ ] Keep persistence/collaboration ownership with Jabr-UI/BlockSuite.
+- [ ] Add cross-repository contract fixtures and compatibility tests.
 
-Use a small, independently verifiable 2D truss example:
+**Exit criteria:** Jabr-UI can consume table data operations without importing UI concerns into this repository.
 
-- Enter nodes, elements, material properties, and section properties.
-- Display element stiffness matrices.
-- Assemble a small global stiffness matrix.
-- Display load and displacement vectors.
-- Compare results against independently verified references.
+## Non-goals
 
-This is a data and matrix workflow demonstration, not a complete FEM solver product.
+- No standalone UI, web app, or table/database editor.
+- No BlockSuite blocks, Yjs document ownership, or visual components.
+- No full Excel clone, XLSX workbook fidelity, macros, or pivot tables.
+- No SQL database engine.
+- No formula language or expression parser duplicating Jabr-CLI.
+- No full FEM solver, meshing, or structural design checks.
 
-### Stage 5 — MVP document integration
-
-- Add a BlockSuite table block through a dedicated adapter.
-- Persist table structure and authored cell values in BlockSuite/Yjs.
-- Add undo/redo, collaboration, and persistence tests.
-- Keep formula results and numerical result caches outside authored collaborative state unless explicitly designed otherwise.
-- Preserve row/column identity through supported reorder and insert/delete operations.
-- Integrate with Jabr-UI through a documented component contract.
-
-### Stage 6 — MVP data exchange and hardening
-
-- CSV import/export
-- TSV and clipboard import/export
-- JSON import/export
-- XML import/export and mapping preview
-- Validation for malformed and oversized inputs
-- Accessibility and keyboard interaction checks
-- Performance tests with realistic engineering datasets
-- Integration tests across Jabr-table, Jabr-UI, and Jabr-CLI boundaries
-
-## MVP scope
-
-### Included
-
-- Engineering Table and Database Table presentations
-- Typed columns and editable records
-- Search, sorting, and basic filtering
-- Stable row and column identity
-- Formula support for the five initial functions
-- Small dense matrix editing and operations
-- CSV, TSV, JSON, XML, and clipboard exchange
-- BlockSuite/Yjs persistence and collaboration through an adapter
-- Matrix inspection for selected engineering/FEM data
-
-### Explicitly deferred
-
-- Full Excel compatibility and XLSX workbook fidelity
-- VBA/macros, pivot tables, and advanced charting
-- Relational database engine and SQL
-- Full FEM solver and mesh generation
-- Large sparse matrix editing as ordinary table cells
-- Advanced formula library coverage
-- External data synchronization and live database connectors
-
-## Initial repository layout (target)
+## Initial repository layout
 
 ```text
-src/
-  app/
-  table-core/
-  table-ui/
-  database-ui/
-  data-io/
-  adapters/
-tests/
-  unit/
-  e2e/
+crates/
+  jabr-table-core/
+    src/
+    tests/
+Cargo.toml
+development.md
 ```
 
-Do not create every package before it is needed. Extract modules when the interfaces are stable and the separation provides real value.
+Add packages only when a stable boundary and real implementation need exist.
 
-## Current UI milestone checklist
+## Validation
 
-- [x] Standalone UI scaffold
-- [x] Shared sample dataset for both views
-- [x] Engineering Table grid
-- [x] Database Table presentation
-- [x] Inline cell editing
-- [x] Add row and column
-- [x] Search and column sorting
-- [x] CSV import/export
-- [x] CI typecheck and production build
-- [ ] Chromium E2E validation
-- [ ] TSV clipboard handling
-- [ ] Column type editing and filter controls
-- [ ] Accessibility review
-
-## Development commands
-
-```sh
-pnpm install
-pnpm dev
-pnpm typecheck
-pnpm build
-```
-
-## Current limitations
-
-The first UI prototype uses in-memory data and local CSV import/export. It is not a persistent database, does not yet support collaboration, does not evaluate formulas, and does not perform matrix or FEM calculations. Those capabilities are staged above and must not be implied by the UI.
+Every stage requires unit tests and CI. Numerical stages require independently verified fixtures. Import/export stages require round-trip and malformed-input tests. Do not claim a feature is implemented until its tests pass.
