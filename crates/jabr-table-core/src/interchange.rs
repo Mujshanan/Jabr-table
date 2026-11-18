@@ -103,7 +103,7 @@ pub fn import_xml(input: &str, options: &XmlImportOptions) -> Result<Table, Inte
         record.children().filter(|n| n.is_element() && n.tag_name().name() == name)
             .map(|n| n.text().unwrap_or("").trim().to_owned())).collect()).collect();
     let columns = names.iter().enumerate().map(|(i, name)| {
-        let id = options.field_to_column.get(name).cloned().unwrap_or_else(|| name.clone());
+        let id = options.field_to_column.get(name).cloned().unwrap_or_else(|| name.strip_prefix("c_").unwrap_or(name).to_owned());
         let kind = infer_type(field_values[i].iter().map(String::as_str));
         Column { id, name: name.clone(), value_type: kind }
     }).collect();
@@ -113,7 +113,7 @@ pub fn import_xml(input: &str, options: &XmlImportOptions) -> Result<Table, Inte
         table.add_row(row_id.clone())?;
         for field in record.children().filter(|n| n.is_element()) {
             let name = field.tag_name().name();
-            let id = options.field_to_column.get(name).cloned().unwrap_or_else(|| name.to_owned());
+            let id = options.field_to_column.get(name).cloned().unwrap_or_else(|| name.strip_prefix("c_").unwrap_or(name).to_owned());
             table.set_cell(&row_id, &id, parse_cell(field.text().unwrap_or("").trim()))?;
         }
     }
@@ -158,13 +158,13 @@ fn infer_type<'a>(values: impl Iterator<Item=&'a str>) -> ColumnType {
     }
 }
 fn parse_cell(raw: &str) -> CellValue {
-    let value = raw.trim();
-    if value.is_empty() { CellValue::Empty }
-    else if value.eq_ignore_ascii_case("true") { CellValue::Boolean(true) }
-    else if value.eq_ignore_ascii_case("false") { CellValue::Boolean(false) }
-    else if let Ok(n) = value.parse::<f64>() {
-        if n.is_finite() { CellValue::Number(n) } else { CellValue::Text(value.to_owned()) }
-    } else { CellValue::Text(value.to_owned()) }
+    let trimmed = raw.trim();
+    if trimmed.is_empty() { CellValue::Empty }
+    else if trimmed.eq_ignore_ascii_case("true") { CellValue::Boolean(true) }
+    else if trimmed.eq_ignore_ascii_case("false") { CellValue::Boolean(false) }
+    else if let Ok(n) = trimmed.parse::<f64>() {
+        if n.is_finite() { CellValue::Number(n) } else { CellValue::Text(raw.to_owned()) }
+    } else { CellValue::Text(raw.to_owned()) }
 }
 fn cell_string(value: &CellValue) -> String {
     match value { CellValue::Empty => String::new(), CellValue::Text(s) => s.clone(),
@@ -180,10 +180,13 @@ fn validate_table(table: &Table) -> Result<(), InterchangeError> {
         for (id, value) in &row.cells {
             let col = table.columns.iter().find(|c| c.id == *id)
                 .ok_or_else(|| TableError::UnknownColumn(id.clone()))?;
-            let valid = matches!((col.value_type, value), (_, CellValue::Empty) |
-                (ColumnType::Any, _) | (ColumnType::Text, CellValue::Text(_)) |
-                (ColumnType::Number, CellValue::Number(n)) if n.is_finite());
-            let valid = valid || matches!((col.value_type, value), (ColumnType::Boolean, CellValue::Boolean(_)));
+            let valid = match (col.value_type, value) {
+                (_, CellValue::Empty) | (ColumnType::Any, _) => true,
+                (ColumnType::Text, CellValue::Text(_)) => true,
+                (ColumnType::Number, CellValue::Number(n)) => n.is_finite(),
+                (ColumnType::Boolean, CellValue::Boolean(_)) => true,
+                _ => false,
+            };
             if !valid { return Err(TableError::TypeMismatch(id.clone()).into()); }
         }
         if row.cells.keys().any(|id| !ids.contains(id.as_str())) {
